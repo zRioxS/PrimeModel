@@ -1,6 +1,8 @@
 package kr.rioxs.primemodel.script
 
-import kr.rioxs.primemodel.api.bone.BoneName
+
+import kr.rioxs.primemodel.api.bone.BoneTags
+import kr.rioxs.primemodel.api.bone.BoneTags.BoneName
 import kr.rioxs.primemodel.api.PrimeModel
 import kr.rioxs.primemodel.api.script.Scripts.AnimationScript
 import kr.rioxs.primemodel.api.tracker.EntityTracker
@@ -29,7 +31,7 @@ class BrightnessScript(
 class ChangePartScript(
     val predicate: BonePredicate,
     newModel: String,
-    newPart: BoneName
+    newPart: BoneTags.BoneName
 ) : AnimationScript {
 
     private val model by lazy {

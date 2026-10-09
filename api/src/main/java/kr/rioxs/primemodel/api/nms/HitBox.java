@@ -1,7 +1,9 @@
 package kr.rioxs.primemodel.api.nms;
 
+
+import kr.rioxs.primemodel.api.bone.BoneTags;
 import kr.rioxs.primemodel.api.PrimeModel;
-import kr.rioxs.primemodel.api.bone.BoneName;
+import kr.rioxs.primemodel.api.bone.BoneTags.BoneName;
 import kr.rioxs.primemodel.api.bone.RenderedBone;
 import kr.rioxs.primemodel.api.mount.MountController;
 import kr.rioxs.primemodel.api.platform.PlatformEntity;
@@ -49,7 +51,7 @@ public interface HitBox extends NMSTypes.Identifiable {
      * @return the group name
      * @since 1.15.2
      */
-    default @NotNull BoneName groupName() {
+    default @NotNull BoneTags.BoneName groupName() {
         return positionSource().name();
     }
 

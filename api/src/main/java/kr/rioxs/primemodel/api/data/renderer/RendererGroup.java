@@ -37,7 +37,7 @@ public final class RendererGroup {
     private final TransformedItemStack itemStack;
     @Getter
     @Unmodifiable
-    private final SequencedMap<BoneName, RendererGroup> children;
+    private final SequencedMap<BoneTags.BoneName, RendererGroup> children;
     @Getter
     private final @Nullable ModelBoundingBox hitBox;
     @Getter
@@ -61,7 +61,7 @@ public final class RendererGroup {
         float scale,
         @Nullable PlatformItemStack itemStack,
         @NotNull BlueprintElement.Bone group,
-        @NotNull SequencedMap<BoneName, RendererGroup> children,
+        @NotNull SequencedMap<BoneTags.BoneName, RendererGroup> children,
         @Nullable ModelBoundingBox box
     ) {
         this.parent = group;
@@ -95,7 +95,7 @@ public final class RendererGroup {
      * Gets name
      * @return name
      */
-    public @NotNull BoneName name() {
+    public @NotNull BoneTags.BoneName name() {
         return parent.name();
     }
 

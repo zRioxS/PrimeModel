@@ -19,7 +19,7 @@ import kr.rioxs.primemodel.api.util.Utils.LogUtil;
 
 import kr.rioxs.primemodel.api.animation.Animations.AnimationModifier;
 import kr.rioxs.primemodel.api.animation.Animations.AnimationStateHandler;
-import kr.rioxs.primemodel.api.bone.BoneName;
+import kr.rioxs.primemodel.api.bone.BoneTags.BoneName;
 import kr.rioxs.primemodel.api.bone.BoneTags;
 import kr.rioxs.primemodel.api.bone.RenderedBone;
 import kr.rioxs.primemodel.api.config.Configs.DebugConfig;
@@ -793,7 +793,7 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
      * @return the bone, or null if not found
      * @since 1.15.2
      */
-    public @Nullable RenderedBone bone(@NotNull BoneName name) {
+    public @Nullable RenderedBone bone(@NotNull BoneTags.BoneName name) {
         return pipeline.boneOf(name);
     }
 

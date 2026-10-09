@@ -1,4 +1,6 @@
 package kr.rioxs.primemodel.api.data.raw;
+
+import kr.rioxs.primemodel.api.bone.BoneTags;
 import kr.rioxs.primemodel.api.manager.Managers.Manager;
 
 import com.google.gson.Gson;
@@ -14,7 +16,7 @@ import kr.rioxs.primemodel.api.animation.Animations.AnimationIterator;
 import kr.rioxs.primemodel.api.animation.Animations.AnimationIterator.AnimationProgress;
 import kr.rioxs.primemodel.api.animation.Animations.AnimationIterator.Timed;
 import kr.rioxs.primemodel.api.animation.Animations.AnimationKeyframe.VectorPoint;
-import kr.rioxs.primemodel.api.bone.BoneName;
+import kr.rioxs.primemodel.api.bone.BoneTags.BoneName;
 import kr.rioxs.primemodel.api.data.DataClasses.Float2;
 import kr.rioxs.primemodel.api.data.DataClasses.Float3;
 import kr.rioxs.primemodel.api.data.DataClasses.Float4;
@@ -148,7 +150,7 @@ public final class RawData {
     }
 
     public record ModelAnimator(
-        @Nullable BoneName name,
+        @Nullable BoneTags.BoneName name,
         @Nullable List<ModelKeyframe> keyframes,
         @Nullable @SerializedName("rotation_global") Boolean _rotationGlobal
     ) {
@@ -165,7 +167,7 @@ public final class RawData {
         }
 
         @Override
-        public @NotNull BoneName name() {
+        public @NotNull BoneTags.BoneName name() {
             return Objects.requireNonNull(name);
         }
 
@@ -193,7 +195,7 @@ public final class RawData {
             .registerTypeAdapter(Float2.class, Float2.PARSER)
             .registerTypeAdapter(Float3.class, Float3.PARSER)
             .registerTypeAdapter(Float4.class, Float4.PARSER)
-            .registerTypeAdapter(BoneName.class, BoneName.PARSER)
+            .registerTypeAdapter(BoneTags.BoneName.class, BoneTags.BoneName.PARSER)
             .registerTypeAdapter(ModelMeta.class, ModelMeta.PARSER)
             .registerTypeAdapter(ModelOutliner.class, ModelOutliner.PARSER)
             .registerTypeAdapter(ModelPlaceholder.class, ModelPlaceholder.PARSER)
@@ -322,7 +324,7 @@ public final class RawData {
             @Override public @NotNull String type() { return LOCATOR; }
             @Override public @NotNull Float3 position() { return position != null ? position : Float3.ZERO; }
             @Override public @NotNull BlueprintElement toBlueprint() {
-                return new BlueprintElement.Locator(UUID.fromString(uuid), BoneName.of(name()), position());
+                return new BlueprintElement.Locator(UUID.fromString(uuid), BoneTags.BoneName.of(name()), position());
             }
         }
 
@@ -340,7 +342,7 @@ public final class RawData {
             @Override public @NotNull String type() { return NULL_OBJECT; }
             @Override public @NotNull Float3 position() { return position != null ? position : Float3.ZERO; }
             @Override public @NotNull BlueprintElement toBlueprint() {
-                return new BlueprintElement.NullObject(UUID.fromString(uuid), BoneName.of(name()),
+                return new BlueprintElement.NullObject(UUID.fromString(uuid), BoneTags.BoneName.of(name()),
                     Optional.ofNullable(ikTarget()).filter(s -> !s.isEmpty()).map(UUID::fromString).orElse(null),
                     Optional.ofNullable(ikSource()).filter(s -> !s.isEmpty()).map(UUID::fromString).orElse(null),
                     position());
@@ -548,7 +550,7 @@ public final class RawData {
                 var filtered = filterIsInstance(child, BlueprintElement.Cube.class).toList();
                 var selectedGroup = context.groups.getOrDefault(uuid(), group);
                 return new BlueprintElement.Group(
-                    UUID.fromString(selectedGroup.uuid()), BoneName.of(selectedGroup.name()),
+                    UUID.fromString(selectedGroup.uuid()), BoneTags.BoneName.of(selectedGroup.name()),
                     selectedGroup.origin(), selectedGroup.rotation().invertXZ(), child,
                     filtered.isEmpty() ? selectedGroup.visibility() : filtered.stream().anyMatch(BlueprintElement.Cube::visibility));
             }

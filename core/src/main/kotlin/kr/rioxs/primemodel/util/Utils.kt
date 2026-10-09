@@ -1,4 +1,6 @@
 package kr.rioxs.primemodel.util
+
+import kr.rioxs.primemodel.api.bone.BoneTags
 import kr.rioxs.primemodel.api.manager.Managers.Manager
 
 import com.github.benmanes.caffeine.cache.Caffeine
@@ -30,7 +32,7 @@ import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import javax.imageio.ImageIO
-import kr.rioxs.primemodel.api.bone.BoneName
+import kr.rioxs.primemodel.api.bone.BoneTags.BoneName
 import kr.rioxs.primemodel.api.config.Configs.DebugConfig
 import kr.rioxs.primemodel.api.config.Configs.IndicatorConfig
 import kr.rioxs.primemodel.api.data.blueprint.Blueprints.BlueprintImage
@@ -261,7 +263,7 @@ val COMMA_DECIMAL_FORMAT = DecimalFormat("#,###.000")
 inline fun <T> T?.ifNull(lazyMessage: () -> String): T & Any = this ?: throw RuntimeException(lazyMessage())
 
 fun Number.withComma(): String = COMMA_FORMAT.format(this)
-val String.boneName get() = BoneName.of(this)
+val String.boneName get() = BoneTags.BoneName.of(this)
 
 fun Long.toByteFormat(): String {
     var value = BigDecimal("$this.000")

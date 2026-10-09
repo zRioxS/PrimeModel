@@ -56,7 +56,7 @@ public final class RenderPipeline implements BoneEventHandler, Iterable<Rendered
 
     private final RenderedBone[] bones;
     private final RenderedBone[] flattenBones;
-    private final SequencedMap<BoneName, RenderedBone> byIdMap;
+    private final SequencedMap<BoneTags.BoneName, RenderedBone> byIdMap;
 
     private final int displayAmount;
     private final Map<UUID, SpawnedPlayer> playerMap = new ConcurrentHashMap<>();
@@ -384,7 +384,7 @@ public final class RenderPipeline implements BoneEventHandler, Iterable<Rendered
      * @return the rendered bone, or null if not found
      * @since 1.15.2
      */
-    public @Nullable RenderedBone boneOf(@NotNull BoneName name) {
+    public @Nullable RenderedBone boneOf(@NotNull BoneTags.BoneName name) {
         return byIdMap.get(name);
     }
 

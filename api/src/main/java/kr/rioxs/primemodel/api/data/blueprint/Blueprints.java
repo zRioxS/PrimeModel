@@ -12,7 +12,7 @@ import kr.rioxs.primemodel.api.animation.Animations.AnimationIterator.TimedStora
 import kr.rioxs.primemodel.api.animation.Animations.AnimationKeyframe;
 import kr.rioxs.primemodel.api.animation.Animations.AnimationKeyframe.VectorPoint;
 import kr.rioxs.primemodel.api.animation.Animations.AnimationModifier;
-import kr.rioxs.primemodel.api.bone.BoneName;
+import kr.rioxs.primemodel.api.bone.BoneTags.BoneName;
 import kr.rioxs.primemodel.api.bone.BoneTags;
 import kr.rioxs.primemodel.api.data.DataClasses.Float2;
 import kr.rioxs.primemodel.api.data.DataClasses.Float3;
@@ -61,10 +61,10 @@ public final class Blueprints {
 
         private final AnimationTree[] trees;
 
-        public static @NotNull Map<BoneName, BlueprintAnimator> generate(
+        public static @NotNull Map<BoneTags.BoneName, BlueprintAnimator> generate(
             float length,
             @NotNull List<BlueprintElement> children,
-            @NotNull Map<BoneName, BlueprintAnimator.AnimatorData> pointMap
+            @NotNull Map<BoneTags.BoneName, BlueprintAnimator.AnimatorData> pointMap
         ) {
             var floatSet = mapFloat(pointMap.values()
                 .stream()
@@ -178,7 +178,7 @@ public final class Blueprints {
         @NotNull AnimationIterator.Type loop,
         float length,
         boolean override,
-        @NotNull @Unmodifiable Map<BoneName, BlueprintAnimator> animator,
+        @NotNull @Unmodifiable Map<BoneTags.BoneName, BlueprintAnimator> animator,
         @Nullable BlueprintScript script,
         @NotNull TimedStorage<AnimationProgress> emptyAnimator
     ) {
@@ -191,10 +191,10 @@ public final class Blueprints {
         }
     }
 
-    public record BlueprintAnimator(@NotNull BoneName name, @NotNull AnimationKeyframe keyframe) {
+    public record BlueprintAnimator(@NotNull BoneTags.BoneName name, @NotNull AnimationKeyframe keyframe) {
 
         public record AnimatorData(
-            @NotNull BoneName name,
+            @NotNull BoneTags.BoneName name,
             @NotNull List<VectorPoint> position,
             @NotNull List<VectorPoint> scale,
             @NotNull List<VectorPoint> rotation,
@@ -218,7 +218,7 @@ public final class Blueprints {
 
         sealed interface Bone extends BlueprintElement {
             @NotNull UUID uuid();
-            @NotNull BoneName name();
+            @NotNull BoneTags.BoneName name();
             @NotNull Float3 origin();
         }
 
@@ -232,7 +232,7 @@ public final class Blueprints {
 
         record Group(
             @NotNull UUID uuid,
-            @NotNull BoneName name,
+            @NotNull BoneTags.BoneName name,
             @NotNull Float3 origin,
             @NotNull Float3 rotation,
             @NotNull List<BlueprintElement> children,
@@ -318,7 +318,7 @@ public final class Blueprints {
             }
         }
 
-        record Locator(@NotNull UUID uuid, @NotNull BoneName name, @NotNull Float3 origin) implements Bone {
+        record Locator(@NotNull UUID uuid, @NotNull BoneTags.BoneName name, @NotNull Float3 origin) implements Bone {
             @Override public @NotNull Float3 origin() { return origin.invertXZ(); }
         }
 
@@ -326,7 +326,7 @@ public final class Blueprints {
 
         record NullObject(
             @NotNull UUID uuid,
-            @NotNull BoneName name,
+            @NotNull BoneTags.BoneName name,
             @Nullable UUID ikTarget,
             @Nullable UUID ikSource,
             @NotNull Float3 origin

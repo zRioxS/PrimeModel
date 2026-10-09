@@ -1,15 +1,325 @@
 package kr.rioxs.primemodel.api.bone;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import com.google.gson.JsonDeserializer;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
 import kr.rioxs.primemodel.api.bone.Bones.BoneRenderContext;
 
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import com.google.gson.JsonDeserializer;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
 import kr.rioxs.primemodel.api.entity.BaseEntity;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import com.google.gson.JsonDeserializer;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
 import kr.rioxs.primemodel.api.nms.NMSTypes.Profiled;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import com.google.gson.JsonDeserializer;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
 import kr.rioxs.primemodel.api.platform.PlatformItemTransform;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import com.google.gson.JsonDeserializer;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
 import kr.rioxs.primemodel.api.player.PlayerLimb;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import com.google.gson.JsonDeserializer;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
 import kr.rioxs.primemodel.api.util.Utils.TransformedItemStack;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import com.google.gson.JsonDeserializer;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import com.google.gson.JsonDeserializer;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import com.google.gson.JsonDeserializer;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;
 
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import com.google.gson.JsonDeserializer;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Objects;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
 import java.util.List;
 
 /**
@@ -159,5 +469,85 @@ public enum BoneTags implements Bones.BoneTag {
     @Override
     public List<String> tags() {
         return tags;
+    }
+
+    // ===== BoneName =====
+
+    /**
+     * A tagged name of some bone
+     * @param tags tags
+     * @param name name
+     * @param rawName original name
+     */
+    public record BoneName(
+        @NotNull @Unmodifiable Set<Bones.BoneTag> tags,
+        @NotNull String name,
+        @NotNull String rawName
+    ) implements Comparable<BoneName> {
+
+        /**
+         * A JSON deserializer for parsing BoneName from a string.
+         * @since 2.0.1
+         */
+        public static final JsonDeserializer<BoneName> PARSER = (json, _, _) -> BoneName.of(json.getAsString());
+
+        /**
+         * Internal constructor for BoneName.
+         */
+        @ApiStatus.Internal
+        public BoneName {
+        }
+
+        /**
+         * Creates a new BoneName by parsing the raw name string.
+         * @param rawName the raw string to parse
+         * @since 2.0.1
+         * @return a parsed BoneName instance
+         */
+        public static @NotNull BoneName of(@NotNull String rawName) {
+            return Bones.BoneTag.REGISTRY.parse(rawName);
+        }
+
+        /**
+         * Checks this name has some tags
+         * @param tags tags
+         * @return any match
+         */
+        public boolean tagged(@NotNull Bones.BoneTag... tags) {
+            for (Bones.BoneTag boneTag : tags) {
+                if (this.tags.contains(boneTag)) return true;
+            }
+            return false;
+        }
+
+        /**
+         * Gets an item mapper of this bone name.
+         * @return item mapper
+         */
+        public @NotNull Bones.BoneItemMapper toItemMapper() {
+            return tags.isEmpty() ? Bones.BoneItemMapper.EMPTY : tags.stream().map(Bones.BoneTag::itemMapper).filter(Objects::nonNull).findFirst().orElse(Bones.BoneItemMapper.EMPTY);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof BoneName boneName)) return false;
+            return rawName.equals(boneName.rawName);
+        }
+
+        @Override
+        public int compareTo(@NonNull BoneName o) {
+            return rawName.compareTo(o.rawName);
+        }
+
+        @Override
+        public int hashCode() {
+            return rawName.hashCode();
+        }
+
+        @Override
+        public @NotNull String toString() {
+            return rawName;
+        }
     }
 }

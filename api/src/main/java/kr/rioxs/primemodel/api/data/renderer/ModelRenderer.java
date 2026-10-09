@@ -1,6 +1,8 @@
 package kr.rioxs.primemodel.api.data.renderer;
 
-import kr.rioxs.primemodel.api.bone.BoneName;
+
+import kr.rioxs.primemodel.api.bone.BoneTags;
+import kr.rioxs.primemodel.api.bone.BoneTags.BoneName;
 import kr.rioxs.primemodel.api.bone.RenderedBone;
 import kr.rioxs.primemodel.api.data.blueprint.Blueprints.BlueprintAnimation;
 import kr.rioxs.primemodel.api.entity.BaseEntity;
@@ -34,7 +36,7 @@ import java.util.stream.Stream;
 public record ModelRenderer(
     @NotNull String name,
     @NotNull Type type,
-    @NotNull @Unmodifiable SequencedMap<BoneName, RendererGroup> rendererGroups,
+    @NotNull @Unmodifiable SequencedMap<BoneTags.BoneName, RendererGroup> rendererGroups,
     @NotNull @Unmodifiable Map<String, BlueprintAnimation> animations
 ) {
     /**
@@ -43,11 +45,11 @@ public record ModelRenderer(
      * @param name part name
      * @return group or null
      */
-    public @Nullable RendererGroup groupByTree(@NotNull BoneName name) {
+    public @Nullable RendererGroup groupByTree(@NotNull BoneTags.BoneName name) {
         return groupByTree0(rendererGroups, name);
     }
 
-    private static @Nullable RendererGroup groupByTree0(@NotNull Map<BoneName, RendererGroup> map, @NotNull BoneName name) {
+    private static @Nullable RendererGroup groupByTree0(@NotNull Map<BoneTags.BoneName, RendererGroup> map, @NotNull BoneTags.BoneName name) {
         if (map.isEmpty()) return null;
         var get = map.get(name);
         if (get != null) return get;

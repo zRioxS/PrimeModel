@@ -67,23 +67,23 @@ public final class Bones {
             return byName.get(tag);
         }
 
-        public @NotNull BoneName parse(@NotNull String rawName) {
+        public @NotNull BoneTags.BoneName parse(@NotNull String rawName) {
             rawName = rawName.toLowerCase(Locale.ROOT);
             var tagArray = rawName.split(TAG_SPLITTER);
-            if (tagArray.length < 2) return new BoneName(ObjectSets.emptySet(), rawName, rawName);
+            if (tagArray.length < 2) return new BoneTags.BoneName(ObjectSets.emptySet(), rawName, rawName);
             var tagList = List.of(tagArray);
             var maxSize = tagList.size() - 1;
             ObjectSet<BoneTag> set = maxSize <= 4 ? new ObjectArraySet<>(maxSize) : new ObjectOpenHashSet<>(maxSize);
             for (String s : tagList) {
                 var tag = byTagNameOrNull(s);
                 if (tag != null && set.size() < maxSize) set.add(tag);
-                else return new BoneName(
+                else return new BoneTags.BoneName(
                     set.isEmpty() ? ObjectSets.emptySet() : ObjectSets.unmodifiable(set),
                     set.isEmpty() ? rawName : String.join(TAG_SPLITTER, tagList.subList(set.size(), tagList.size())),
                     rawName
                 );
             }
-            return new BoneName(
+            return new BoneTags.BoneName(
                 ObjectSets.unmodifiable(set),
                 String.join(TAG_SPLITTER, tagList.subList(set.size(), tagList.size())),
                 rawName

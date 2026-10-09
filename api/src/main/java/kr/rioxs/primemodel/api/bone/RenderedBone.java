@@ -690,7 +690,7 @@ public final class RenderedBone implements BoneEventHandler {
         }
     }
 
-    public @NotNull BoneName name() {
+    public @NotNull BoneTags.BoneName name() {
         return getGroup().name();
     }
 
