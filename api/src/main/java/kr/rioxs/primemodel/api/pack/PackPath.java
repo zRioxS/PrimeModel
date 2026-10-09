@@ -60,4 +60,33 @@ public record PackPath(@NotNull String path) implements Comparable<PackPath> {
     public int compareTo(@NotNull PackPath o) {
         return path.compareTo(o.path);
     }
+
+    /**
+     * Represents a raw byte array associated with a specific pack path.
+     * <p>
+     * This record is used to store the binary content of a resource within a resource pack.
+     * It implements {@link Comparable} to allow sorting based on the path.
+     * </p>
+     *
+     * @param path the path of the resource
+     * @param bytes the binary content of the resource
+     * @since 1.15.2
+     */
+    public record Byte(@NotNull PackPath path, byte[] bytes) implements Comparable<Byte> {
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Byte that)) return false;
+            return path.equals(that.path);
+        }
+
+        @Override
+        public int hashCode() {
+            return path.hashCode();
+        }
+
+        @Override
+        public int compareTo(@NotNull Byte o) {
+            return path.compareTo(o.path);
+        }
+    }
 }

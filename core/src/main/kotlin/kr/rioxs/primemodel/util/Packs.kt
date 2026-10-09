@@ -5,8 +5,7 @@ import kr.rioxs.primemodel.api.PrimeModelConfig
 import kr.rioxs.primemodel.api.PrimeModelConfig.PackType.*
 import kr.rioxs.primemodel.api.pack.Pack
 import kr.rioxs.primemodel.api.pack.Pack.PackResult
-import kr.rioxs.primemodel.api.pack.PackByte
-import kr.rioxs.primemodel.api.pack.PackMeta
+import kr.rioxs.primemodel.api.pack.PackPath.Byte;import kr.rioxs.primemodel.api.pack.PackMeta
 import kr.rioxs.primemodel.api.pack.PackObfuscator
 import kr.rioxs.primemodel.api.pack.PackOverlay
 import kr.rioxs.primemodel.api.pack.PackPath
@@ -74,7 +73,7 @@ class FolderGenerator : PackGenerator {
         val changed = AtomicBoolean()
         pipeline.forEachParallel(build.resources(), PackResource::estimatedSize) {
             val bytes = it.get()
-            pack[it.overlay()] = PackByte(it.path(), bytes)
+            pack[it.overlay()] = PackPath.Byte(it.path(), bytes)
             val file = it.path().toFile()
             val index = pipeline.progress(it.path().name())
             if (file.length() != bytes.size.toLong()) {
@@ -138,7 +137,7 @@ fun PackZipper.writeToResult(pipeline: ReloadPipeline, dir: File? = null): PackR
     val build = build()
     return PackResult(build.meta(), dir).apply {
         pipeline.forEachParallel(build.resources(), PackResource::estimatedSize) {
-            set(it.overlay(), PackByte(it.path(), it.get()))
+            set(it.overlay(), PackPath.Byte(it.path(), it.get()))
             val index = pipeline.progress(it.path().name())
             debugPack {
                 componentOf(

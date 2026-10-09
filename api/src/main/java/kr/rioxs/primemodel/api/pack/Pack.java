@@ -149,9 +149,9 @@ public final class Pack {
     public static final class PackResult {
         private final PackMeta meta;
         private final File directory;
-        private final SortedMap<PackOverlay, SortedSet<PackByte>> overlays = new TreeMap<>();
-        private final SortedSet<PackByte> assets = new TreeSet<>();
-        private final SortedSet<PackByte> assetsView = Collections.unmodifiableSortedSet(assets);
+        private final SortedMap<PackOverlay, SortedSet<PackPath.Byte>> overlays = new TreeMap<>();
+        private final SortedSet<PackPath.Byte> assets = new TreeSet<>();
+        private final SortedSet<PackPath.Byte> assetsView = Collections.unmodifiableSortedSet(assets);
 
         private final long creationTime = System.currentTimeMillis();
         private boolean frozen = false;
@@ -159,7 +159,7 @@ public final class Pack {
         private UUID uuid;
 
         @ApiStatus.Internal
-        public void set(@Nullable PackOverlay overlay, @NotNull PackByte packByte) {
+        public void set(@Nullable PackOverlay overlay, @NotNull PackPath.Byte packByte) {
             if (frozen) throw new IllegalStateException("result is frozen.");
             if (overlay == null) {
                 synchronized (assets) {
@@ -201,7 +201,7 @@ public final class Pack {
                 if (uuid != null) return uuid;
                 try {
                     var sha = MessageDigest.getInstance("SHA-256");
-                    stream().map(PackByte::bytes).forEach(sha::update);
+                    stream().map(PackPath.Byte::bytes).forEach(sha::update);
                     return uuid = UUID.nameUUIDFromBytes(sha.digest());
                 } catch (Exception e) {
                     return uuid = UUID.randomUUID();
@@ -219,12 +219,12 @@ public final class Pack {
 
         @NotNull
         @Unmodifiable
-        public SortedSet<PackByte> overlays(@NotNull PackOverlay overlay) {
+        public SortedSet<PackPath.Byte> overlays(@NotNull PackOverlay overlay) {
             var get = overlays.get(overlay);
             return get != null ? Collections.unmodifiableSortedSet(get) : Collections.emptySortedSet();
         }
 
-        public @NotNull Stream<PackByte> stream() {
+        public @NotNull Stream<PackPath.Byte> stream() {
             return Stream.concat(
                 overlays.values().stream().flatMap(Collection::stream),
                 assets.stream()
@@ -233,7 +233,7 @@ public final class Pack {
 
         @NotNull
         @Unmodifiable
-        public SortedSet<PackByte> assets() {
+        public SortedSet<PackPath.Byte> assets() {
             return assetsView;
         }
     }
