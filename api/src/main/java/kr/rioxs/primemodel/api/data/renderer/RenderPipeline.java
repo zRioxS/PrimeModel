@@ -1,4 +1,5 @@
 package kr.rioxs.primemodel.api.data.renderer;
+import kr.rioxs.primemodel.api.bone.Bones;
 import kr.rioxs.primemodel.api.manager.Managers.Manager;
 import kr.rioxs.primemodel.api.bone.Bones.BoneEventHandler;
 import kr.rioxs.primemodel.api.bone.Bones.BoneEventDispatcher;
@@ -62,7 +63,7 @@ public final class RenderPipeline implements BoneEventHandler, Iterable<Rendered
     private final Set<UUID> hidePlayerSet = ConcurrentHashMap.newKeySet();
 
     private final BoneEventDispatcher eventDispatcher = new BoneEventDispatcher();
-    private final BoneIKSolver ikSolver;
+    private final Bones.BoneIKSolver ikSolver;
 
     private Predicate<PlatformPlayer> viewFilter = _ -> true;
     private Predicate<PlatformPlayer> hideFilter = p -> hidePlayerSet.contains(p.uuid());
@@ -94,7 +95,7 @@ public final class RenderPipeline implements BoneEventHandler, Iterable<Rendered
         // Bone
         flattenBones = Arrays.stream(bones).flatMap(RenderedBone::flatten).toArray(RenderedBone[]::new);
         byIdMap = associateSequenced(flattenBones, RenderedBone::name);
-        ikSolver = new BoneIKSolver(associate(flattenBones, RenderedBone::uuid));
+        ikSolver = new Bones.BoneIKSolver(associate(flattenBones, RenderedBone::uuid));
         // Setup
         displayAmount = (int) Arrays.stream(flattenBones)
             .peek(bone -> bone.extend(this))
