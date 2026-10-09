@@ -3,14 +3,14 @@ import kr.rioxs.primemodel.api.manager.Managers.Manager
 
 import kr.rioxs.primemodel.api.PrimeModelConfig
 import kr.rioxs.primemodel.api.PrimeModelConfig.PackType.*
-import kr.rioxs.primemodel.api.pack.Pack
+import kr.rioxs.primemodel.api.pack.Pack.Pack.Pack
 import kr.rioxs.primemodel.api.pack.Pack.PackResult
-import kr.rioxs.primemodel.api.pack.PackByte
-import kr.rioxs.primemodel.api.pack.PackMeta
+import kr.rioxs.primemodel.api.pack.Pack.Pack.PackByte
+import kr.rioxs.primemodel.api.pack.Pack.Pack.PackMeta
 import kr.rioxs.primemodel.api.pack.PackObfuscator
-import kr.rioxs.primemodel.api.pack.PackOverlay
-import kr.rioxs.primemodel.api.pack.PackPath
-import kr.rioxs.primemodel.api.pack.PackResource
+import kr.rioxs.primemodel.api.pack.Pack.Pack.PackOverlay
+import kr.rioxs.primemodel.api.pack.Pack.Pack.PackPath
+import kr.rioxs.primemodel.api.pack.Pack.Pack.PackResource
 import kr.rioxs.primemodel.api.pack.PackZipper
 import kr.rioxs.primemodel.manager.ReloadPipeline
 import net.kyori.adventure.text.format.NamedTextColor
