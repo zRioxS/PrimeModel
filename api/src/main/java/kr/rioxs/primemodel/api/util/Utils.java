@@ -56,7 +56,7 @@ import com.google.gson.stream.JsonReader;
 import kr.rioxs.primemodel.api.bone.Bones;
 import kr.rioxs.primemodel.api.PrimeModelPlatform;
 import kr.rioxs.primemodel.api.bone.Bones;
-import kr.rioxs.primemodel.api.version.MinecraftVersion;
+import kr.rioxs.primemodel.api.nms.NMSVersion.MinecraftVersion;
 import kr.rioxs.primemodel.api.bone.Bones;
 import net.kyori.adventure.text.event.ClickEvent;
 import kr.rioxs.primemodel.api.bone.Bones;

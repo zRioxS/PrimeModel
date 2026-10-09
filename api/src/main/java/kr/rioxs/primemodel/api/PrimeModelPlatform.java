@@ -15,7 +15,7 @@ import kr.rioxs.primemodel.api.pack.Pack.PackResult;
 import kr.rioxs.primemodel.api.pack.PackZipper;
 import kr.rioxs.primemodel.api.platform.PlatformAdapter;
 import kr.rioxs.primemodel.api.scheduler.Schedulers.ModelScheduler;
-import kr.rioxs.primemodel.api.version.MinecraftVersion;
+import kr.rioxs.primemodel.api.nms.NMSVersion.MinecraftVersion;
 import net.kyori.adventure.audience.Audience;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

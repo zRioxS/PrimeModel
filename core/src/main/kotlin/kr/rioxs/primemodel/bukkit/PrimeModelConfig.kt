@@ -23,7 +23,7 @@ import kr.rioxs.primemodel.api.platform.PlatformItemStack
 import kr.rioxs.primemodel.api.PrimeModelConfig
 import kr.rioxs.primemodel.api.PrimeModelPlatform.ReloadResult
 import kr.rioxs.primemodel.api.util.Utils.EntityUtil
-import kr.rioxs.primemodel.api.version.MinecraftVersion.*
+import kr.rioxs.primemodel.api.nms.NMSVersion.MinecraftVersion.*
 import kr.rioxs.primemodel.bukkit.configuration.PluginConfiguration
 import kr.rioxs.primemodel.bukkit.manager.CompatibilityManager
 import kr.rioxs.primemodel.bukkit.manager.EntityManager

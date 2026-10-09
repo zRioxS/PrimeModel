@@ -22,7 +22,7 @@ import kr.rioxs.primemodel.api.PrimeModelEventBus
 import kr.rioxs.primemodel.api.PrimeModelLogger
 import kr.rioxs.primemodel.api.PrimeModelPlatform.ReloadResult
 import kr.rioxs.primemodel.api.PrimeModelPlatform.ReloadResult.*
-import kr.rioxs.primemodel.api.version.MinecraftVersion
+import kr.rioxs.primemodel.api.nms.NMSVersion.MinecraftVersion
 import kr.rioxs.primemodel.bukkit.command.startBukkitCommand
 import kr.rioxs.primemodel.bukkit.configuration.PluginConfiguration
 import kr.rioxs.primemodel.bukkit.util.ADVENTURE_PLATFORM
