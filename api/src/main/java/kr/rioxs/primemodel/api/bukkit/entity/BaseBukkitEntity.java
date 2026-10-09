@@ -2,7 +2,9 @@ package kr.rioxs.primemodel.api.bukkit.entity;
 
 import kr.rioxs.primemodel.api.bukkit.platform.BukkitPlatform.BukkitAdapter;
 import kr.rioxs.primemodel.api.bukkit.platform.BukkitPlatform.BukkitEntity;
+import kr.rioxs.primemodel.api.bukkit.platform.BukkitPlatform.BukkitPlayer;
 import kr.rioxs.primemodel.api.entity.BaseEntity;
+import kr.rioxs.primemodel.api.entity.BasePlayer;
 import kr.rioxs.primemodel.api.util.Utils.TransformedItemStack;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
@@ -92,5 +94,30 @@ public interface BaseBukkitEntity extends BaseEntity, PersistentDataHolder {
         var container = getPersistentDataContainer();
         if (modelData == null) container.remove(TRACKING_ID);
         else container.set(TRACKING_ID, PersistentDataType.STRING, modelData);
+    }
+
+    // ===== Nested Types =====
+
+    /**
+     * Represents a Bukkit-specific player adapter.
+     * <p>
+     * This interface extends {@link BaseBukkitEntity} and {@link BasePlayer} to provide
+     * access to the underlying Bukkit player.
+     * </p>
+     *
+     * @since 2.0.0
+     */
+    interface Player extends BaseBukkitEntity, BasePlayer {
+
+        /**
+         * Returns the underlying Bukkit player.
+         *
+         * @return the Bukkit player
+         * @since 2.0.0
+         */
+        @Override
+        default @NotNull org.bukkit.entity.Player entity() {
+            return ((BukkitPlayer) platform()).getSource();
+        }
     }
 }

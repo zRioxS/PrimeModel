@@ -1,7 +1,7 @@
 package kr.rioxs.primemodel.bukkit.nms.v1_21_R6
 
 import kr.rioxs.primemodel.api.bukkit.entity.BaseBukkitEntity
-import kr.rioxs.primemodel.api.bukkit.entity.BaseBukkitPlayer
+import kr.rioxs.primemodel.api.bukkit.entity.BaseBukkitEntity.Player as BaseBukkitPlayer
 import kr.rioxs.primemodel.api.nms.NMSTypes.Profiled
 import kr.rioxs.primemodel.api.platform.PlatformPlayer
 import kr.rioxs.primemodel.api.player.PlayerSkinParts
