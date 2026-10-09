@@ -2,7 +2,7 @@ package kr.rioxs.primemodel.bukkit.scheduler
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import java.util.concurrent.TimeUnit
-import kr.rioxs.primemodel.api.bukkit.scheduler.BukkitModelScheduler
+import kr.rioxs.primemodel.api.bukkit.PrimeModelBukkit.BukkitModelScheduler
 import kr.rioxs.primemodel.api.scheduler.Schedulers.ModelTask
 import kr.rioxs.primemodel.bukkit.util.PLUGIN
 import org.bukkit.Bukkit

@@ -10,7 +10,7 @@ import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import kr.rioxs.primemodel.api.bukkit.BukkitModelEventBus
 import kr.rioxs.primemodel.api.bukkit.event.PrimeModelBukkitEvent
-import kr.rioxs.primemodel.api.bukkit.scheduler.BukkitModelScheduler
+import kr.rioxs.primemodel.api.bukkit.PrimeModelBukkit.BukkitModelScheduler
 import kr.rioxs.primemodel.api.event.EventInterfaces.CancellableEvent
 import kr.rioxs.primemodel.api.manager.Managers.Manager
 import kr.rioxs.primemodel.api.manager.Managers.ReloadInfo
