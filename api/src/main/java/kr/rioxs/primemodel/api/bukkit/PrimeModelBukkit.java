@@ -9,13 +9,18 @@ import kr.rioxs.primemodel.api.event.EventInterfaces.ModelEventApplication;
 import kr.rioxs.primemodel.api.event.EventInterfaces.ModelEventListener;
 import kr.rioxs.primemodel.api.scheduler.Schedulers.ModelScheduler;
 import kr.rioxs.primemodel.api.scheduler.Schedulers.ModelTask;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static kr.rioxs.primemodel.api.util.Utils.ReflectionUtil.classExists;
 
@@ -30,58 +35,20 @@ import static kr.rioxs.primemodel.api.util.Utils.ReflectionUtil.classExists;
  */
 public interface PrimeModelBukkit extends PrimeModelPlatform {
 
-    /**
-     * Checks if the server is running on the Folia platform.
-     * @since 2.0.0
-     */
     boolean IS_FOLIA = classExists("io.papermc.paper.threadedregions.RegionizedServer");
-
-    /**
-     * Checks if the server is running on the Purpur platform.
-     * @since 2.0.0
-     */
     boolean IS_PURPUR = classExists("org.purpurmc.purpur.PurpurConfig");
-
-    /**
-     * Checks if the server is running on the Paper platform (or a fork like Purpur/Folia).
-     * @since 2.0.0
-     */
     boolean IS_PAPER = IS_PURPUR || IS_FOLIA || classExists("io.papermc.paper.configuration.PaperConfigurations");
 
-    /**
-     * Returns the current {@link PrimeModelBukkit} instance.
-     *
-     * @return the current platform instance
-     * @since 2.0.0
-     */
     static @NotNull PrimeModelBukkit platform() {
         return (PrimeModelBukkit) PrimeModel.platform();
     }
 
-    /**
-     * Returns the Bukkit-specific scheduler.
-     *
-     * @return the scheduler
-     * @since 2.0.0
-     */
     @Override
     @NotNull BukkitModelScheduler scheduler();
 
-    /**
-     * Returns the Bukkit-specific adapter.
-     *
-     * @return the adapter
-     * @since 2.0.0
-     */
     @Override
     @NotNull BukkitAdapter adapter();
 
-    /**
-     * Returns the Bukkit-specific event bus.
-     *
-     * @return the event bus
-     * @since 2.0.0
-     */
     @Override
     @NotNull BukkitModelEventBus eventBus();
 
@@ -101,24 +68,11 @@ public interface PrimeModelBukkit extends PrimeModelPlatform {
 
     /**
      * An implementation of {@link ModelEventApplication} for Bukkit plugins.
-     * <p>
-     * This record holds a weak reference to a Bukkit plugin to prevent memory leaks
-     * and checks if the plugin is enabled.
-     * </p>
      *
-     * @param name the name of the plugin
-     * @param pluginRef a weak reference to the plugin instance
      * @since 2.0.0
      */
     record BukkitEventApplication(@NotNull String name, @NotNull WeakReference<Plugin> pluginRef) implements ModelEventApplication {
 
-        /**
-         * Creates a new BukkitEventApplication for the given plugin.
-         *
-         * @param plugin the Bukkit plugin
-         * @return the event application wrapper
-         * @since 2.0.0
-         */
         public static @NotNull BukkitEventApplication of(@NotNull Plugin plugin) {
             return new BukkitEventApplication(plugin.getName(), new WeakReference<>(plugin));
         }
@@ -151,6 +105,109 @@ public interface PrimeModelBukkit extends PrimeModelPlatform {
         @NotNull
         default <T extends ModelEvent> ModelEventListener subscribe(@NotNull Plugin plugin, @NotNull Class<T> eventClass, @NotNull Consumer<T> consumer) {
             return subscribe(BukkitEventApplication.of(plugin), eventClass, consumer);
+        }
+    }
+
+    /**
+     * A wrapper class that adapts {@link ModelEvent} to Bukkit's {@link Event} system.
+     * <p>
+     * This allows Bukkit plugins to listen for PrimeModel events using the standard Bukkit event API.
+     * The underlying {@link ModelEvent} is lazily initialized when accessed.
+     * </p>
+     *
+     * @since 2.0.0
+     */
+    final class PrimeModelBukkitEvent extends Event {
+
+        private static final HandlerList HANDLER_LIST = new HandlerList();
+
+        private final Class<? extends ModelEvent> eventClass;
+        private final @NotNull Supplier<? extends ModelEvent> supplier;
+        private volatile ModelEvent source;
+
+        /**
+         * Creates a new PrimeModelBukkitEvent.
+         *
+         * @param eventClass the class of the model event
+         * @param supplier a supplier that creates the model event
+         * @since 2.0.0
+         */
+        @ApiStatus.Internal
+        public PrimeModelBukkitEvent(@NotNull Class<? extends ModelEvent> eventClass, @NotNull Supplier<? extends ModelEvent> supplier) {
+            super(!Bukkit.isPrimaryThread());
+            this.eventClass = eventClass;
+            this.supplier = supplier;
+        }
+
+        /**
+         * Checks if the wrapped event is an instance of the specified class.
+         *
+         * @param eventClass the class to check against
+         * @param <T> the type of the event
+         * @return true if the wrapped event is assignable to the class
+         * @since 2.0.0
+         */
+        public <T extends ModelEvent> boolean is(@NotNull Class<T> eventClass) {
+            return eventClass.isAssignableFrom(this.eventClass);
+        }
+
+        /**
+         * Casts the wrapped event to the specified class if possible.
+         *
+         * @param eventClass the class to cast to
+         * @param <T> the type of the event
+         * @return the cast event, or null if the cast is not possible
+         * @since 2.0.0
+         */
+        public <T extends ModelEvent> @Nullable T as(@NotNull Class<T> eventClass) {
+            if (!is(eventClass)) return null;
+            var event = source;
+            if (event == null) {
+                synchronized (this) {
+                    event = source;
+                    if (event == null) event = source = supplier.get();
+                }
+            }
+            return eventClass.cast(event);
+        }
+
+        /**
+         * Executes a consumer if the wrapped event is of the specified type.
+         *
+         * @param eventClass the class to check against
+         * @param consumer the consumer to execute
+         * @param <T> the type of the event
+         * @since 2.0.0
+         */
+        public <T extends ModelEvent> void as(@NotNull Class<T> eventClass, @NotNull Consumer<? super T> consumer) {
+            var get = as(eventClass);
+            if (get != null) consumer.accept(get);
+        }
+
+        /**
+         * Returns the underlying model event, if initialized.
+         *
+         * @return the model event, or null if not yet initialized
+         * @since 2.0.0
+         */
+        @ApiStatus.Internal
+        public @Nullable ModelEvent source() {
+            return source;
+        }
+
+        @Override
+        public @NotNull HandlerList getHandlers() {
+            return HANDLER_LIST;
+        }
+
+        /**
+         * Returns the handler list for this event.
+         *
+         * @return the handler list
+         * @since 2.0.0
+         */
+        public static HandlerList getHandlerList() {
+            return HANDLER_LIST;
         }
     }
 }
