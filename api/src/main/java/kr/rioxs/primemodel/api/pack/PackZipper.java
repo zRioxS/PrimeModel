@@ -41,7 +41,7 @@ public final class PackZipper {
 
     private final PackObfuscator obfuscator = PackObfuscator.order();
     private final PackMeta.Builder metaBuilder = PackMeta.builder();
-    private final Map<PackOverlay, Pack.PackAssets> overlayMap = new ConcurrentHashMap<>();
+    private final Map<Pack.PackOverlay, Pack.PackAssets> overlayMap = new ConcurrentHashMap<>();
 
     /**
      * Retrieves the default assets collection.
@@ -50,7 +50,7 @@ public final class PackZipper {
      * @since 1.15.2
      */
     public @NotNull Pack.PackAssets assets() {
-        return overlay(PackOverlay.DEFAULT);
+        return overlay(Pack.PackOverlay.DEFAULT);
     }
 
     /**
@@ -60,7 +60,7 @@ public final class PackZipper {
      * @return the assets collection
      * @since 1.15.2
      */
-    public @NotNull Pack.PackAssets overlay(@NotNull PackOverlay overlay) {
+    public @NotNull Pack.PackAssets overlay(@NotNull Pack.PackOverlay overlay) {
         return overlayMap.computeIfAbsent(overlay, o -> new Pack.PackAssets(o, obfuscator));
     }
 
@@ -83,7 +83,7 @@ public final class PackZipper {
     @ApiStatus.Internal
     public @NotNull BuildData build() {
         var resources = new ArrayList<PackResource>(size());
-        for (Map.Entry<PackOverlay, Pack.PackAssets> entry : overlayMap.entrySet()) {
+        for (Map.Entry<Pack.PackOverlay, Pack.PackAssets> entry : overlayMap.entrySet()) {
             var overlay = entry.getKey();
             var value = entry.getValue();
             if (overlay.test() && value.dirty()) {

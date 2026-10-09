@@ -1,18 +1,109 @@
 package kr.rioxs.primemodel.api.pack;
 
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import kr.rioxs.primemodel.api.PrimeModel;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import lombok.AccessLevel;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import lombok.RequiredArgsConstructor;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import org.jetbrains.annotations.ApiStatus;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import org.jetbrains.annotations.NotNull;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import org.jetbrains.annotations.Nullable;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import org.jetbrains.annotations.Unmodifiable;
 
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import java.io.File;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import java.security.MessageDigest;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import java.util.*;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import java.util.concurrent.ConcurrentHashMap;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import java.util.function.Supplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.Optional;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
+import java.util.function.BooleanSupplier;
+import kr.rioxs.primemodel.api.util.Utils.Functions.BooleanConstantSupplier;
 import java.util.stream.Stream;
 
 /**
@@ -235,6 +326,74 @@ public final class Pack {
         @Unmodifiable
         public SortedSet<PackPath.Byte> assets() {
             return assetsView;
+        }
+    }
+
+    // ===== PackOverlay =====
+
+    /**
+     * Represents a resource pack overlay, allowing for version-specific resources.
+     * <p>
+     * Overlays are used to support multiple Minecraft versions within a single resource pack.
+     * </p>
+     *
+     * @param packName the name of the overlay (e.g., "legacy", "modern")
+     * @param range the version range this overlay applies to
+     * @param tester a supplier to determine if this overlay should be active
+     * @since 1.15.2
+     */
+    public record PackOverlay(
+        @NotNull String packName,
+        @NotNull Optional<PackMeta.VersionRange> range,
+        @NotNull BooleanSupplier tester
+    ) implements Comparable<PackOverlay> {
+        /**
+         * The default overlay (base pack).
+         * @since 1.15.2
+         */
+        public static final PackOverlay DEFAULT = new PackOverlay(
+            "",
+            Optional.empty(),
+            BooleanConstantSupplier.TRUE
+        );
+
+        /**
+         * Generates the root path for this overlay.
+         *
+         * @param namespace the namespace prefix
+         * @param obfuscator the obfuscator
+         * @return the pack path
+         * @since 1.15.2
+         */
+        public @NotNull PackPath path(@NotNull String namespace, @NotNull PackObfuscator obfuscator) {
+            return packName.isEmpty() ? PackPath.EMPTY : new PackPath(namespace + "_" + obfuscator.obfuscate(packName));
+        }
+
+        /**
+         * Checks if this overlay is active.
+         *
+         * @return true if active, false otherwise
+         * @since 1.15.2
+         */
+        public boolean test() {
+            return tester.getAsBoolean();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof PackOverlay that)) return false;
+            return packName.equals(that.packName);
+        }
+
+        @Override
+        public int hashCode() {
+            return packName.hashCode();
+        }
+
+        @Override
+        public int compareTo(@NotNull PackOverlay o) {
+            return packName.compareTo(o.packName);
         }
     }
 }

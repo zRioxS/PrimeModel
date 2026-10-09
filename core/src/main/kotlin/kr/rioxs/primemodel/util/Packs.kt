@@ -7,7 +7,7 @@ import kr.rioxs.primemodel.api.pack.Pack
 import kr.rioxs.primemodel.api.pack.Pack.PackResult
 import kr.rioxs.primemodel.api.pack.PackPath.Byte;import kr.rioxs.primemodel.api.pack.PackMeta
 import kr.rioxs.primemodel.api.pack.PackObfuscator
-import kr.rioxs.primemodel.api.pack.PackOverlay
+import kr.rioxs.primemodel.api.pack.Pack.PackOverlay
 import kr.rioxs.primemodel.api.pack.PackPath
 import kr.rioxs.primemodel.api.pack.PackResource
 import kr.rioxs.primemodel.api.pack.PackZipper

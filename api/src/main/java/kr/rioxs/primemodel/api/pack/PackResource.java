@@ -23,7 +23,7 @@ public interface PackResource extends Supplier<byte[]> {
      * @since 1.15.2
      */
     @Nullable
-    PackOverlay overlay();
+    Pack.PackOverlay overlay();
 
     /**
      * Returns the path of this resource.
@@ -65,7 +65,7 @@ public interface PackResource extends Supplier<byte[]> {
      * @return the created resource
      * @since 1.15.2
      */
-    static @NotNull PackResource of(@Nullable PackOverlay overlay, @NotNull PackPath path, long size, @NotNull Supplier<byte[]> supplier) {
+    static @NotNull PackResource of(@Nullable Pack.PackOverlay overlay, @NotNull PackPath path, long size, @NotNull Supplier<byte[]> supplier) {
         Objects.requireNonNull(path, "path");
         Objects.requireNonNull(supplier, "supplier");
         return new Packed(overlay, path, size, supplier);
@@ -81,7 +81,7 @@ public interface PackResource extends Supplier<byte[]> {
      * @since 1.15.2
      */
     record Packed(
-        @Nullable PackOverlay overlay,
+        @Nullable Pack.PackOverlay overlay,
         @NotNull PackPath path,
         long estimatedSize,
         @NotNull Supplier<byte[]> supplier
