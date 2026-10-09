@@ -1,4 +1,15 @@
 package kr.rioxs.primemodel.api.bone;
+import kr.rioxs.primemodel.api.entity.BaseEntity;
+import kr.rioxs.primemodel.api.platform.PlatformItemTransform;
+import kr.rioxs.primemodel.api.platform.PlatformPlayer;
+import kr.rioxs.primemodel.api.util.Utils.TransformedItemStack;
+import kr.rioxs.primemodel.api.util.Utils.InterpolationUtil;
+import kr.rioxs.primemodel.api.util.Utils.MathUtil;
+import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.ApiStatus;
+import java.util.Map;
+import java.util.function.Function;
+import static kr.rioxs.primemodel.api.util.Utils.CollectionUtil.newSequencedAddressingMap;
 import kr.rioxs.primemodel.api.manager.Managers.Manager;
 import org.joml.Vector3f;
 import org.joml.Quaternionf;
@@ -186,4 +197,101 @@ public final class Bones {
             this(source, PrimeModel.platform().manager(SkinManager.class).fallback());
         }
     }
+
+    // ===== BoneItemMapper =====
+    /**
+ * Item-mapper of bone
+ */
+public interface BoneItemMapper extends BiFunction<BoneRenderContext, TransformedItemStack, TransformedItemStack> {
+
+    @Override
+    @NotNull TransformedItemStack apply(@NotNull BoneRenderContext context, @NotNull TransformedItemStack transformedItemStack);
+
+    /**
+     * Empty
+     */
+    BoneItemMapper EMPTY = new BoneItemMapper() {
+        @NotNull
+        @Override
+        public PlatformItemTransform transform() {
+            return PlatformItemTransform.FIXED;
+        }
+
+        @Override
+        @NotNull
+        public TransformedItemStack apply(@NotNull BoneRenderContext context, @NotNull TransformedItemStack transformedItemStack) {
+            return transformedItemStack;
+        }
+    };
+
+    /**
+     * Mapped if a render source is player
+     * @param transform transformation
+     * @param mapper mapper
+     * @return bone item mapper
+     */
+    static @NotNull BoneItemMapper player(@NotNull PlatformItemTransform transform, @NotNull Function<PlatformPlayer, TransformedItemStack> mapper) {
+        return new BoneItemMapper() {
+
+            private static final TransformedItemStack AIR = TransformedItemStack.empty();
+
+            @NotNull
+            @Override
+            public PlatformItemTransform transform() {
+                return transform;
+            }
+
+            @Override
+            public @NotNull TransformedItemStack apply(@NotNull BoneRenderContext context, @NotNull TransformedItemStack transformedItemStack) {
+                if (context.source() instanceof RenderSource.Player player) {
+                    var get = mapper.apply(player.entity().platform());
+                    return get == null ? AIR : get;
+                }
+                return transformedItemStack;
+            }
+        };
+    }
+
+    /**
+     * Mapped if a render source is entity
+     * @param transform transformation
+     * @param mapper mapper
+     * @return bone item mapper
+     */
+    static @NotNull BoneItemMapper entity(@NotNull PlatformItemTransform transform, @NotNull Function<BaseEntity, TransformedItemStack> mapper) {
+        return new BoneItemMapper() {
+
+            private static final TransformedItemStack AIR = TransformedItemStack.empty();
+
+            @NotNull
+            @Override
+            public PlatformItemTransform transform() {
+                return transform;
+            }
+
+            @Override
+            public @NotNull TransformedItemStack apply(@NotNull BoneRenderContext context, @NotNull TransformedItemStack transformedItemStack) {
+                if (context.source() instanceof RenderSource.Entity entity) {
+                    var get = mapper.apply(entity.entity());
+                    return get == null ? AIR : get;
+                }
+                return transformedItemStack;
+            }
+        };
+    }
+
+    /**
+     * Gets this mapper's display is fixed
+     * @return fixed
+     */
+    default boolean fixed() {
+        return transform() == PlatformItemTransform.FIXED;
+    }
+
+    /**
+     * Gets item display transformation
+     * @return transformation
+     */
+    @NotNull PlatformItemTransform transform();
+}
 }

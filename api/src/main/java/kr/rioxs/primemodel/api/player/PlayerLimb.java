@@ -1,8 +1,8 @@
 package kr.rioxs.primemodel.api.player;
+import kr.rioxs.primemodel.api.bone.Bones;
 import kr.rioxs.primemodel.api.bone.Bones.BoneRenderContext;
 
 import kr.rioxs.primemodel.api.armor.PlayerArmor;
-import kr.rioxs.primemodel.api.bone.BoneItemMapper;
 import kr.rioxs.primemodel.api.nms.Profiled;
 import kr.rioxs.primemodel.api.platform.PlatformItemTransform;
 import kr.rioxs.primemodel.api.skin.SkinData;
@@ -125,7 +125,7 @@ public enum PlayerLimb {
      * Limb item mapper
      */
     @RequiredArgsConstructor
-    public class LimbItemMapper implements BoneItemMapper {
+    public class LimbItemMapper implements Bones.BoneItemMapper {
 
         private final Function<BoneRenderContext, TransformedItemStack> playerMapper;
 

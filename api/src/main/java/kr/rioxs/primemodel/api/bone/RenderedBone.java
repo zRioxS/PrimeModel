@@ -102,7 +102,7 @@ public final class RenderedBone implements BoneEventHandler {
     //Item
     @Getter
     @Setter
-    private BoneItemMapper itemMapper;
+    private Bones.BoneItemMapper itemMapper;
     private volatile int previousTint = INITIAL_TINT_VALUE, tint = INITIAL_TINT_VALUE;
     private volatile TransformedItemStack itemStack;
 
@@ -141,7 +141,7 @@ public final class RenderedBone implements BoneEventHandler {
         itemMapper = group.getItemMapper();
         root = parent != null ? parent.root : this;
         this.itemStack = itemMapper.apply(renderContext, group.getItemStack());
-        this.dummyBone = group.getItemStack().isAir() && itemMapper == BoneItemMapper.EMPTY;
+        this.dummyBone = group.getItemStack().isAir() && itemMapper == Bones.BoneItemMapper.EMPTY;
         defaultFrame = movement;
         children = childrenMapper.apply(this);
         if (!dummyBone) {

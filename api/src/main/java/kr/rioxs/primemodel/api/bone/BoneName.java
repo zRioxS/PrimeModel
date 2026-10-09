@@ -60,8 +60,8 @@ public record BoneName(
      * Gets an item mapper of this bone name.
      * @return item mapper
      */
-    public @NotNull BoneItemMapper toItemMapper() {
-        return tags.isEmpty() ? BoneItemMapper.EMPTY : tags.stream().map(BoneTag::itemMapper).filter(Objects::nonNull).findFirst().orElse(BoneItemMapper.EMPTY);
+    public @NotNull Bones.BoneItemMapper toItemMapper() {
+        return tags.isEmpty() ? Bones.BoneItemMapper.EMPTY : tags.stream().map(BoneTag::itemMapper).filter(Objects::nonNull).findFirst().orElse(Bones.BoneItemMapper.EMPTY);
     }
 
     @Override

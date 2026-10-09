@@ -1,4 +1,5 @@
 package kr.rioxs.primemodel.api.data.renderer;
+import kr.rioxs.primemodel.api.bone.Bones;
 import kr.rioxs.primemodel.api.bone.Bones.BoneMovement;
 import kr.rioxs.primemodel.api.bone.Bones.BoneRenderContext;
 
@@ -44,7 +45,7 @@ public final class RendererGroup {
     private final @NotNull Vector3f hitBoxPoint;
 
     @Getter
-    private final @NotNull BoneItemMapper itemMapper;
+    private final @NotNull Bones.BoneItemMapper itemMapper;
 
     @Getter
     private final @NotNull MountController mountController;

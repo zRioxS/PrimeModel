@@ -3,7 +3,7 @@ import kr.rioxs.primemodel.api.manager.Managers.Manager
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import kr.rioxs.primemodel.api.bone.BoneItemMapper
+import kr.rioxs.primemodel.api.bone.Bones.BoneItemMapper
 import kr.rioxs.primemodel.api.data.DataClasses.ModelAsset
 import kr.rioxs.primemodel.api.data.blueprint.Blueprints.BlueprintElement
 import kr.rioxs.primemodel.api.data.blueprint.Blueprints.BlueprintJson
@@ -229,7 +229,7 @@ object ModelManagerImpl : ModelManager, GlobalManager {
                 if (this !is BlueprintElement.Group) return RendererGroup(1.0F, null, this, emptySequencedMap(), null)
                 return RendererGroup(
                     scale(),
-                    if (name.toItemMapper() !== BoneItemMapper.EMPTY) null else builder(this)?.let { itemNamespace ->
+                    if (name.toItemMapper() !== Bones.BoneItemMapper.EMPTY) null else builder(this)?.let { itemNamespace ->
                         CONFIG.item().get().itemModel(PlatformNamespace(CONFIG.namespace(), itemNamespace))
                     },
                     this,

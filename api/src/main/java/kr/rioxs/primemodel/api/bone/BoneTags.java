@@ -55,14 +55,14 @@ public enum BoneTags implements BoneTag {
     /**
      * Entity's item in left hand
      */
-    LEFT_ITEM(BoneItemMapper.entity(
+    LEFT_ITEM(Bones.BoneItemMapper.entity(
         PlatformItemTransform.THIRDPERSON_LEFTHAND,
         BaseEntity::offHand
     ), "pli", "li"),
     /**
      * Entity's item in right hand
      */
-    RIGHT_ITEM(BoneItemMapper.entity(
+    RIGHT_ITEM(Bones.BoneItemMapper.entity(
         PlatformItemTransform.THIRDPERSON_RIGHTHAND,
         BaseEntity::mainHand
     ), "pri", "ri"),
@@ -117,7 +117,7 @@ public enum BoneTags implements BoneTag {
     /**
      * Cape
      */
-    CAPE(new BoneItemMapper() {
+    CAPE(new Bones.BoneItemMapper() {
         @Override
         public @NotNull TransformedItemStack apply(@NotNull BoneRenderContext context, @NotNull TransformedItemStack transformedItemStack) {
             TransformedItemStack cape = null;
@@ -138,19 +138,19 @@ public enum BoneTags implements BoneTag {
         this(null, tags);
     }
 
-    BoneTags(@Nullable BoneItemMapper itemMapper, @NotNull String... tags) {
+    BoneTags(@Nullable Bones.BoneItemMapper itemMapper, @NotNull String... tags) {
         this.itemMapper = itemMapper;
         this.tags = List.of(tags);
     }
 
     @Nullable
-    private final BoneItemMapper itemMapper;
+    private final Bones.BoneItemMapper itemMapper;
     @NotNull
     private final List<String> tags;
 
     @Nullable
     @Override
-    public BoneItemMapper itemMapper() {
+    public Bones.BoneItemMapper itemMapper() {
         return itemMapper;
     }
 

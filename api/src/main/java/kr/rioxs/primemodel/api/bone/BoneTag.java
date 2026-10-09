@@ -28,7 +28,7 @@ public interface BoneTag {
      * Gets an item mapper
      * @return item mapper
      */
-    @Nullable BoneItemMapper itemMapper();
+    @Nullable Bones.BoneItemMapper itemMapper();
 
     /**
      * Gets a tag list like 'h', 'hi', 'b'
