@@ -1,6 +1,6 @@
 package kr.rioxs.primemodel.bukkit.nms.v26_R2
 
-import kr.rioxs.primemodel.api.armor.ArmorItem
+import kr.rioxs.primemodel.api.armor.PlayerArmor.ArmorItem
 import kr.rioxs.primemodel.api.armor.PlayerArmor
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.entity.EquipmentSlot
@@ -12,25 +12,25 @@ internal data class PlayerArmorImpl(
     private val player: CraftPlayer
 ) : PlayerArmor {
 
-    override fun helmet(): ArmorItem? {
+    override fun helmet(): PlayerArmor.ArmorItem? {
         return player.handle.getItemBySlot(EquipmentSlot.HEAD).toArmorItem()
     }
 
-    override fun leggings(): ArmorItem? {
+    override fun leggings(): PlayerArmor.ArmorItem? {
         return player.handle.getItemBySlot(EquipmentSlot.LEGS).toArmorItem()
     }
 
-    override fun chestplate(): ArmorItem? {
+    override fun chestplate(): PlayerArmor.ArmorItem? {
         return player.handle.getItemBySlot(EquipmentSlot.CHEST).toArmorItem()
     }
 
-    override fun boots(): ArmorItem? {
+    override fun boots(): PlayerArmor.ArmorItem? {
         return player.handle.getItemBySlot(EquipmentSlot.FEET).toArmorItem()
     }
 
-    private fun VanillaItemStack.toArmorItem(): ArmorItem? = get(DataComponents.EQUIPPABLE)?.assetId?.map {
+    private fun VanillaItemStack.toArmorItem(): PlayerArmor.ArmorItem? = get(DataComponents.EQUIPPABLE)?.assetId?.map {
         val trim = get(DataComponents.TRIM)
-        ArmorItem(
+        PlayerArmor.ArmorItem(
             get(DataComponents.DYED_COLOR)?.rgb ?: if (it === EquipmentAssets.LEATHER) DyedItemColor.LEATHER_COLOR else 0xFFFFFF,
             it.identifier().path,
             trim?.pattern?.value()?.assetId?.path,

@@ -6,7 +6,7 @@ import com.github.benmanes.caffeine.cache.RemovalCause
 import it.unimi.dsi.fastutil.ints.IntList
 import kr.rioxs.primemodel.library.armormodel.ArmorResource
 import kr.rioxs.primemodel.library.dynamicuv.*
-import kr.rioxs.primemodel.api.armor.ArmorItem
+import kr.rioxs.primemodel.api.armor.PlayerArmor.ArmorItem
 import kr.rioxs.primemodel.api.armor.PlayerArmor
 import kr.rioxs.primemodel.api.event.ClassEvents.CreatePlayerSkinEvent
 import kr.rioxs.primemodel.api.event.ClassEvents.RemovePlayerSkinEvent
@@ -598,7 +598,7 @@ object SkinManagerImpl : SkinManager, GlobalManager {
         colors + data.colors
     )
 
-    private fun SkinModelData.asItem(resource: ArmorResource, item: ArmorItem? = null): TransformedItemStack {
+    private fun SkinModelData.asItem(resource: ArmorResource, item: PlayerArmor.ArmorItem? = null): TransformedItemStack {
         if (item == null) return asItem(whiteList)
         val armorData = ArmorManager.armor.resource(resource).run {
             item.trim()?.let {
