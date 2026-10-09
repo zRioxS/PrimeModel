@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public record AnimationBundler(
     @NotNull PacketBundler standard,
-    @NotNull ModAnimationBundler mod
+    @NotNull NMS.ModAnimationBundler mod
 ) {
 
     /**
