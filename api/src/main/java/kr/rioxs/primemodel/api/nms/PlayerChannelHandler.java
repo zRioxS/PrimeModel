@@ -15,7 +15,7 @@ import java.util.UUID;
  *
  * @since 1.15.2
  */
-public interface PlayerChannelHandler extends Identifiable, AutoCloseable {
+public interface PlayerChannelHandler extends NMSTypes.Identifiable, AutoCloseable {
 
     /**
      * Returns the Bukkit player associated with this handler.

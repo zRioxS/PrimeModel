@@ -9,7 +9,7 @@ import kr.rioxs.primemodel.api.armor.PlayerArmor;
 import kr.rioxs.primemodel.api.entity.BaseEntity;
 import kr.rioxs.primemodel.api.entity.BasePlayer;
 import kr.rioxs.primemodel.api.manager.Managers.SkinManager;
-import kr.rioxs.primemodel.api.nms.Profiled;
+import kr.rioxs.primemodel.api.nms.NMSTypes.Profiled;
 import kr.rioxs.primemodel.api.platform.PlatformLocation;
 import kr.rioxs.primemodel.api.player.PlayerSkinParts;
 import kr.rioxs.primemodel.api.profile.Profiles.ModelProfile;

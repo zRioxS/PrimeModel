@@ -4,7 +4,7 @@ import kr.rioxs.primemodel.api.event.EventInterfaces.CancellableEvent;
 import kr.rioxs.primemodel.api.event.EventInterfaces.ModelDamageSource;
 import kr.rioxs.primemodel.api.event.EventInterfaces.ModelEvent;
 import kr.rioxs.primemodel.api.nms.HitBox;
-import kr.rioxs.primemodel.api.nms.ModelInteractionHand;
+import kr.rioxs.primemodel.api.nms.NMSTypes.ModelInteractionHand;
 import kr.rioxs.primemodel.api.platform.PlatformEntity;
 import kr.rioxs.primemodel.api.platform.PlatformPlayer;
 import lombok.Getter;

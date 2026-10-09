@@ -14,6 +14,7 @@ import kr.rioxs.primemodel.api.entity.BaseEntity
 import kr.rioxs.primemodel.api.entity.BasePlayer
 import kr.rioxs.primemodel.api.mount.MountController
 import kr.rioxs.primemodel.api.nms.*
+import kr.rioxs.primemodel.api.nms.NMS.ModAnimationBundler
 import kr.rioxs.primemodel.api.platform.PlatformEntity
 import kr.rioxs.primemodel.api.platform.PlatformItemStack
 import kr.rioxs.primemodel.api.platform.PlatformLocation

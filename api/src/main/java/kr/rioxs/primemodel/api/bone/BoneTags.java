@@ -2,7 +2,7 @@ package kr.rioxs.primemodel.api.bone;
 import kr.rioxs.primemodel.api.bone.Bones.BoneRenderContext;
 
 import kr.rioxs.primemodel.api.entity.BaseEntity;
-import kr.rioxs.primemodel.api.nms.Profiled;
+import kr.rioxs.primemodel.api.nms.NMSTypes.Profiled;
 import kr.rioxs.primemodel.api.platform.PlatformItemTransform;
 import kr.rioxs.primemodel.api.player.PlayerLimb;
 import kr.rioxs.primemodel.api.util.Utils.TransformedItemStack;

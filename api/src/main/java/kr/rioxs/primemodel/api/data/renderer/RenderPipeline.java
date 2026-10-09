@@ -9,7 +9,7 @@ import kr.rioxs.primemodel.api.animation.Animations.AnimationModifier.AnimationO
 import kr.rioxs.primemodel.api.animation.Animations.AnimationModifier.RunningAnimation;
 import kr.rioxs.primemodel.api.bone.*;
 import kr.rioxs.primemodel.api.manager.Managers.PlayerManager;
-import kr.rioxs.primemodel.api.nms.AnimationBundler;
+import kr.rioxs.primemodel.api.nms.NMSTypes.AnimationBundler;
 import kr.rioxs.primemodel.api.nms.HitBox;
 import kr.rioxs.primemodel.api.nms.PacketBundler;
 import kr.rioxs.primemodel.api.nms.PlayerChannelHandler;

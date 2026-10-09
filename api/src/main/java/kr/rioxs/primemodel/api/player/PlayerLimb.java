@@ -3,7 +3,7 @@ import kr.rioxs.primemodel.api.bone.Bones;
 import kr.rioxs.primemodel.api.bone.Bones.BoneRenderContext;
 
 import kr.rioxs.primemodel.api.armor.PlayerArmor;
-import kr.rioxs.primemodel.api.nms.Profiled;
+import kr.rioxs.primemodel.api.nms.NMSTypes.Profiled;
 import kr.rioxs.primemodel.api.platform.PlatformItemTransform;
 import kr.rioxs.primemodel.api.skin.SkinData;
 import kr.rioxs.primemodel.api.util.Utils.TransformedItemStack;

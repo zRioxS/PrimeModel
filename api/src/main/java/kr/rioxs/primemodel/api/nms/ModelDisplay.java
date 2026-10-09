@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @since 1.15.2
  */
-public interface ModelDisplay extends Identifiable {
+public interface ModelDisplay extends NMSTypes.Identifiable {
 
     /**
      * Checks if this display is currently invisible.
@@ -138,7 +138,7 @@ public interface ModelDisplay extends Identifiable {
      * @return the display transformer
      * @since 1.15.2
      */
-    @NotNull DisplayTransformer createTransformer();
+    @NotNull NMSTypes.DisplayTransformer createTransformer();
 
     /**
      * Sends updated entity data if it has changed.

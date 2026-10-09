@@ -29,6 +29,8 @@ import kr.rioxs.primemodel.api.data.renderer.RenderSource;
 import kr.rioxs.primemodel.api.data.renderer.RendererGroup;
 import kr.rioxs.primemodel.api.entity.BaseEntity;
 import kr.rioxs.primemodel.api.nms.*;
+import kr.rioxs.primemodel.api.nms.NMSTypes.AnimationBundler;
+import kr.rioxs.primemodel.api.nms.NMSTypes.DisplayTransformer;
 import kr.rioxs.primemodel.api.platform.PlatformItemStack;
 import kr.rioxs.primemodel.api.platform.PlatformLocation;
 import kr.rioxs.primemodel.api.platform.PlatformPlayer;

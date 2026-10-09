@@ -3,7 +3,7 @@ import kr.rioxs.primemodel.api.manager.Managers.Manager;
 
 import kr.rioxs.primemodel.api.PrimeModel;
 import kr.rioxs.primemodel.api.manager.Managers.PlayerManager;
-import kr.rioxs.primemodel.api.nms.Identifiable;
+import kr.rioxs.primemodel.api.nms.NMSTypes.Identifiable;
 import kr.rioxs.primemodel.api.platform.PlatformEntity;
 import kr.rioxs.primemodel.api.platform.PlatformLocation;
 import kr.rioxs.primemodel.api.platform.PlatformPlayer;

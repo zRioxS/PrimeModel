@@ -1,6 +1,6 @@
 package kr.rioxs.primemodel.bukkit.nms.v26_R1
 
-import kr.rioxs.primemodel.api.nms.AnimationBundler
+import kr.rioxs.primemodel.api.nms.NMSTypes.AnimationBundler
 import kr.rioxs.primemodel.api.util.Utils.MathUtil
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket
 import net.minecraft.network.syncher.EntityDataAccessor

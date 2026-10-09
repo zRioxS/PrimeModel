@@ -23,7 +23,7 @@ import java.util.function.Function;
  *
  * @since 1.15.2
  */
-public interface HitBox extends Identifiable {
+public interface HitBox extends NMSTypes.Identifiable {
 
     /**
      * Hides this hitbox from a specific player.

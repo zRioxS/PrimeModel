@@ -1,8 +1,8 @@
 package kr.rioxs.primemodel.bukkit.nms.v26_R3
 
 import kr.rioxs.primemodel.api.entity.BaseEntity
-import kr.rioxs.primemodel.api.nms.AnimationBundler
-import kr.rioxs.primemodel.api.nms.DisplayTransformer
+import kr.rioxs.primemodel.api.nms.NMSTypes.AnimationBundler
+import kr.rioxs.primemodel.api.nms.NMSTypes.DisplayTransformer
 import kr.rioxs.primemodel.api.nms.ModelDisplay
 import kr.rioxs.primemodel.api.nms.PacketBundler
 import kr.rioxs.primemodel.api.platform.PlatformBillboard

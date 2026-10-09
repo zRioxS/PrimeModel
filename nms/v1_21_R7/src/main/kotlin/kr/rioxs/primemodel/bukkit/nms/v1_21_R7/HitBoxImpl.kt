@@ -17,7 +17,7 @@ import kr.rioxs.primemodel.api.event.hitbox.HitBoxEvents.HitBoxRemoveEvent
 import kr.rioxs.primemodel.api.mount.MountController
 import kr.rioxs.primemodel.api.nms.HitBox
 import kr.rioxs.primemodel.api.nms.HitBoxListener
-import kr.rioxs.primemodel.api.nms.ModelInteractionHand
+import kr.rioxs.primemodel.api.nms.NMSTypes.ModelInteractionHand
 import kr.rioxs.primemodel.api.platform.PlatformEntity
 import kr.rioxs.primemodel.api.platform.PlatformPlayer
 import net.minecraft.network.protocol.game.ServerboundInteractPacket

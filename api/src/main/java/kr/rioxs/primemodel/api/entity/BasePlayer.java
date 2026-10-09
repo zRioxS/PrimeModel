@@ -1,6 +1,6 @@
 package kr.rioxs.primemodel.api.entity;
 
-import kr.rioxs.primemodel.api.nms.Profiled;
+import kr.rioxs.primemodel.api.nms.NMSTypes.Profiled;
 import kr.rioxs.primemodel.api.platform.PlatformPlayer;
 import org.jetbrains.annotations.NotNull;
 

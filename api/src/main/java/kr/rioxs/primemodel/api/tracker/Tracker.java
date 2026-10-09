@@ -31,6 +31,7 @@ import kr.rioxs.primemodel.api.entity.BaseEntity;
 import kr.rioxs.primemodel.api.event.*;
 import kr.rioxs.primemodel.api.event.hitbox.HitBoxEvents.HitBoxEvent;
 import kr.rioxs.primemodel.api.nms.*;
+import kr.rioxs.primemodel.api.nms.NMSTypes.AnimationBundler;
 import kr.rioxs.primemodel.api.platform.PlatformLocation;
 import kr.rioxs.primemodel.api.platform.PlatformPlayer;
 import kr.rioxs.primemodel.api.script.Scripts.TimeScript;

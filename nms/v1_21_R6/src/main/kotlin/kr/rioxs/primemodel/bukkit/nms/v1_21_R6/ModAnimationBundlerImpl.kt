@@ -1,6 +1,6 @@
 package kr.rioxs.primemodel.bukkit.nms.v1_21_R6
 
-import kr.rioxs.primemodel.api.nms.ModAnimationBundler
+import kr.rioxs.primemodel.api.nms.NMS.ModAnimationBundler
 import kr.rioxs.primemodel.api.platform.PlatformPlayer
 import kr.rioxs.primemodel.api.util.Utils.MathUtil
 import net.minecraft.network.FriendlyByteBuf
