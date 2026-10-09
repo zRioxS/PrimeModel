@@ -20,6 +20,7 @@ import kr.rioxs.primemodel.api.skin.SkinData;
 import it.unimi.dsi.fastutil.objects.*;
 import kr.rioxs.primemodel.api.nms.HitBoxListener;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -427,4 +428,39 @@ public static final class BoneIKSolver {
         }
     }
 }
+
+    // ===== BoneTag =====
+
+    /**
+     * A tag of bone.
+     *
+     * @since 2.0.1
+     */
+    public interface BoneTag {
+
+        /**
+         * The default registry for bone tags.
+         * @since 2.0.1
+         */
+        BoneTagRegistry REGISTRY = new BoneTagRegistry();
+
+        /**
+         * Gets tag name.
+         * @return tag name
+         */
+        @NotNull String name();
+
+        /**
+         * Gets an item mapper.
+         * @return item mapper
+         */
+        @Nullable BoneItemMapper itemMapper();
+
+        /**
+         * Gets a tag list like 'h', 'hi', 'b'.
+         * @since 2.0.1
+         * @return tags
+         */
+        @NotNull @Unmodifiable List<String> tags();
+    }
 }

@@ -16,7 +16,7 @@ import java.util.Set;
  * @param rawName original name
  */
 public record BoneName(
-    @NotNull @Unmodifiable Set<BoneTag> tags,
+    @NotNull @Unmodifiable Set<Bones.BoneTag> tags,
     @NotNull String name,
     @NotNull String rawName
 ) implements Comparable<BoneName> {
@@ -41,7 +41,7 @@ public record BoneName(
      * @return a parsed BoneName instance
      */
     public static @NotNull BoneName of(@NotNull String rawName) {
-        return BoneTag.REGISTRY.parse(rawName);
+        return Bones.BoneTag.REGISTRY.parse(rawName);
     }
 
     /**
@@ -49,8 +49,8 @@ public record BoneName(
      * @param tags tags
      * @return any match
      */
-    public boolean tagged(@NotNull BoneTag... tags) {
-        for (BoneTag boneTag : tags) {
+    public boolean tagged(@NotNull Bones.BoneTag... tags) {
+        for (Bones.BoneTag boneTag : tags) {
             if (this.tags.contains(boneTag)) return true;
         }
         return false;
@@ -61,7 +61,7 @@ public record BoneName(
      * @return item mapper
      */
     public @NotNull Bones.BoneItemMapper toItemMapper() {
-        return tags.isEmpty() ? Bones.BoneItemMapper.EMPTY : tags.stream().map(BoneTag::itemMapper).filter(Objects::nonNull).findFirst().orElse(Bones.BoneItemMapper.EMPTY);
+        return tags.isEmpty() ? Bones.BoneItemMapper.EMPTY : tags.stream().map(Bones.BoneTag::itemMapper).filter(Objects::nonNull).findFirst().orElse(Bones.BoneItemMapper.EMPTY);
     }
 
     @Override

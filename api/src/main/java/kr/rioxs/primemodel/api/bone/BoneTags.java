@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Builtin tags
  */
-public enum BoneTags implements BoneTag {
+public enum BoneTags implements Bones.BoneTag {
     /**
      * Follows entity's head rotation
      */
