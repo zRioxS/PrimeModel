@@ -1,0 +1,1109 @@
+package kr.rioxs.primemodel.api.tracker;
+import kr.rioxs.primemodel.api.tracker.TrackerUtils.DummyTracker;
+import kr.rioxs.primemodel.api.tracker.TrackerUtils.ModelRotation;
+import kr.rioxs.primemodel.api.tracker.TrackerUtils.TrackerModifier;
+import kr.rioxs.primemodel.api.tracker.TrackerUtils.TrackerAnimation;
+import kr.rioxs.primemodel.api.bone.Bones.BoneMovement;
+import kr.rioxs.primemodel.api.bone.Bones.BoneEventDispatcher;
+import kr.rioxs.primemodel.api.event.ClassEvents.ModelSpawnAtPlayerEvent;
+import kr.rioxs.primemodel.api.event.ClassEvents.PlayerHideTrackerEvent;
+import kr.rioxs.primemodel.api.event.ClassEvents.PlayerShowTrackerEvent;
+import kr.rioxs.primemodel.api.event.RecordEvents.CloseTrackerEvent;
+import kr.rioxs.primemodel.api.event.RecordEvents.ModelDespawnAtPlayerEvent;
+import kr.rioxs.primemodel.api.event.RecordEvents.PlayerPerAnimationStartEvent;
+import kr.rioxs.primemodel.api.event.RecordEvents.PlayerPerAnimationEndEvent;
+import kr.rioxs.primemodel.api.util.Utils.MathUtil;
+import kr.rioxs.primemodel.api.util.Utils.FunctionUtil;
+import kr.rioxs.primemodel.api.util.Utils.LogUtil;
+
+
+import kr.rioxs.primemodel.api.animation.Animations.AnimationModifier;
+import kr.rioxs.primemodel.api.animation.Animations.AnimationStateHandler;
+import kr.rioxs.primemodel.api.bone.BoneName;
+import kr.rioxs.primemodel.api.bone.BoneTags;
+import kr.rioxs.primemodel.api.bone.RenderedBone;
+import kr.rioxs.primemodel.api.config.Configs.DebugConfig;
+import kr.rioxs.primemodel.api.data.blueprint.Blueprints.BlueprintAnimation;
+import kr.rioxs.primemodel.api.data.renderer.ModelRenderer;
+import kr.rioxs.primemodel.api.data.renderer.RenderPipeline;
+import kr.rioxs.primemodel.api.data.renderer.RenderSource;
+import kr.rioxs.primemodel.api.entity.BaseEntity;
+import kr.rioxs.primemodel.api.event.*;
+import kr.rioxs.primemodel.api.event.hitbox.HitBoxEvents.HitBoxEvent;
+import kr.rioxs.primemodel.api.nms.*;
+import kr.rioxs.primemodel.api.platform.PlatformLocation;
+import kr.rioxs.primemodel.api.platform.PlatformPlayer;
+import kr.rioxs.primemodel.api.script.Scripts.TimeScript;
+import kr.rioxs.primemodel.api.util.*;
+import kr.rioxs.primemodel.api.util.Utils.EntityUtil;
+import kr.rioxs.primemodel.api.util.Utils.EventUtil;
+import kr.rioxs.primemodel.api.util.Utils.BonePredicate;
+import kr.rioxs.primemodel.api.util.Utils.Functions.FloatSupplier;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.*;
+import java.util.stream.Stream;
+
+/**
+ * Represents the core controller for a specific model instance.
+ * <p>
+ * A Tracker manages the lifecycle, rendering, animation, and player interaction of a model.
+ * It coordinates with the {@link RenderPipeline} to update bone positions and send packets to players.
+ * </p>
+ *
+ * @since 1.15.2
+ */
+public sealed abstract class Tracker implements AutoCloseable permits EntityTracker, DummyTracker {
+
+    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors() * 2, new ThreadFactory() {
+
+        private final AtomicInteger integer = new AtomicInteger();
+
+        @Override
+        public Thread newThread(@NotNull Runnable r) {
+            var thread = new Thread(r);
+            thread.setDaemon(true);
+            thread.setName("PrimeModel-Worker-" + integer.getAndIncrement());
+            thread.setUncaughtExceptionHandler((t, e) -> LogUtil.handleException("Exception has occurred in " + t.getName(), e));
+            return thread;
+        }
+    });
+    /**
+     * The interval in milliseconds between tracker ticks.
+     * @since 1.15.2
+     */
+    public static final int TRACKER_TICK_INTERVAL = 25;
+    /**
+     * The multiplier to convert tracker ticks to Minecraft ticks (50ms).
+     * @since 1.15.2
+     */
+    public static final int MINECRAFT_TICK_MULTIPLIER = MathUtil.MINECRAFT_TICK_MILLS / TRACKER_TICK_INTERVAL;
+
+    @Getter
+    protected final RenderPipeline pipeline;
+    private long frame = 0;
+    private final Queue<Runnable> queuedTask = new ConcurrentLinkedQueue<>();
+    private final AtomicBoolean tickPause = new AtomicBoolean();
+    private final AtomicBoolean isClosed = new AtomicBoolean();
+    private final AtomicBoolean readyForForceUpdate = new AtomicBoolean();
+    private final AtomicBoolean forRemoval = new AtomicBoolean();
+    private final AtomicBoolean firstStart = new AtomicBoolean();
+    protected final TrackerModifier modifier;
+    private final BundlerSet bundlerSet;
+    private final FloatSupplier heightSupplier = FunctionUtil.throttleTickFloat(TRACKER_TICK_INTERVAL, new FloatSupplier() {
+
+        private final BoneMovement heightCache = new BoneMovement();
+
+        @Override
+        public float getAsFloat() {
+            return (float) pipeline
+                .stream()
+                .filter(bone -> bone.name().tagged(BoneTags.HEAD, BoneTags.HEAD_WITH_CHILDREN))
+                .mapToDouble(bone -> bone.hitBoxPosition(heightCache).y)
+                .max()
+                .orElse(0F);
+        }
+    });
+    private final AnimationStateHandler<TimeScript> scriptProcessor = new AnimationStateHandler<>(
+        TimeScript.EMPTY,
+        (b, _) -> {
+            if (b == null) return;
+            if (b.isSync()) {
+                location().task(() -> b.accept(this));
+            } else b.accept(this);
+        }
+    );
+    private volatile ScheduledFuture<?> task;
+    protected ModelRotator rotator = ModelRotator.YAW;
+    protected ModelScaler scaler = ModelScaler.entity();
+    private Supplier<ModelRotation> rotationSupplier = () -> ModelRotation.EMPTY;
+    private BiConsumer<Tracker, CloseReason> closeEventHandler = (t, r) -> EventUtil.call(CloseTrackerEvent.class, () -> new CloseTrackerEvent(t, r));
+
+    private ScheduledPacketHandler handler = (_, _) -> animationTick();
+    private BiConsumer<Tracker, PlatformPlayer> perPlayerHandler = null;
+
+    /**
+     * Creates a new tracker.
+     *
+     * @param pipeline the render pipeline
+     * @param modifier the tracker modifier
+     * @since 1.15.2
+     */
+    public Tracker(@NotNull RenderPipeline pipeline, @NotNull TrackerModifier modifier) {
+        this.pipeline = pipeline;
+        this.modifier = modifier;
+        bundlerSet = new BundlerSet();
+        if (modifier.sightTrace()) pipeline.viewFilter(p -> EntityUtil.canSee(p.eyeLocation(), location()));
+        frame((t, s) -> {
+            if (readyForForceUpdate.compareAndSet(true, false)) t.pipeline.forEach(b -> b.dirtyUpdate(s.dataBundler));
+        });
+        tick((t, s) -> pipeline.rotate(
+            t.rotation(),
+            s.tickBundler
+        ));
+        tick((t, _) -> {
+            var perPlayer = perPlayerHandler;
+            if (perPlayer != null) pipeline.nonHidePlayer().forEach(p -> perPlayer.accept(t, p.player()));
+        });
+        pipeline.spawnPacketHandler(_ -> start());
+        pipeline.eventDispatcher().handleStateCreate((_, uuid) -> bundlerSet.perPlayerViewBundler
+            .computeIfAbsent(uuid, PerPlayerCache::new)
+            .add());
+        pipeline.eventDispatcher().handleStateRemove((_, uuid) -> {
+            var get = bundlerSet.perPlayerViewBundler.get(uuid);
+            if (get != null) get.remove();
+        });
+        LogUtil.debug(DebugConfig.DebugOption.TRACKER, () -> getClass().getSimpleName() + " tracker created: " + name());
+        pipeline.getSource().completeContext().thenAccept(context -> {
+            if (pipeline.matchTree(bone -> bone.updateItem(context))) forceUpdate(true);
+        });
+    }
+
+    /**
+     * Checks if the tracker's update task is currently scheduled.
+     *
+     * @return true if scheduled, false otherwise
+     * @since 1.15.2
+     */
+    public boolean isScheduled() {
+        var currentTask = task;
+        return currentTask != null && !currentTask.isCancelled();
+    }
+
+    private void start() {
+        if (isScheduled()) return;
+        synchronized (this) {
+            if (isScheduled()) return;
+            if (firstStart.compareAndSet(false, true)) {
+                TrackerAnimations.play(this);
+            }
+            tick();
+            task = EXECUTOR.scheduleAtFixedRate(() -> {
+                if (playerCount() == 0 && !forRemoval.get()) {
+                    shutdown();
+                    return;
+                }
+                frame++;
+                tick();
+            }, TRACKER_TICK_INTERVAL, TRACKER_TICK_INTERVAL, TimeUnit.MILLISECONDS);
+            LogUtil.debug(DebugConfig.DebugOption.TRACKER, () -> getClass().getSimpleName() + " scheduler started: " + name());
+        }
+    }
+
+    private void shutdown() {
+        if (!isScheduled()) return;
+        synchronized (this) {
+            if (!isScheduled()) return;
+            task.cancel(true);
+            task = null;
+            frame = 0;
+            LogUtil.debug(DebugConfig.DebugOption.TRACKER, () -> getClass().getSimpleName() + " scheduler shutdown: " + name());
+        }
+    }
+
+    private void tick() {
+        try {
+            if (frame % MINECRAFT_TICK_MULTIPLIER == 0) {
+                Runnable task;
+                while ((task = queuedTask.poll()) != null) task.run();
+            }
+            handler.handle(this, bundlerSet);
+            bundlerSet.send();
+        } catch (Throwable throwable) {
+            LogUtil.handleException("Ticking this tracker has been failed: " + name(), throwable);
+        }
+    }
+
+    private void animationTick() {
+        if (!tickPause.get()) {
+            scriptProcessor.tick();
+            pipeline.tick(bundlerSet.viewBundler);
+        }
+    }
+
+    /**
+     * Returns the current rotation of the model.
+     *
+     * @return the model rotation
+     * @since 1.15.2
+     */
+    public @NotNull ModelRotation rotation() {
+        return rotator.apply(this, rotationSupplier.get());
+    }
+
+    /**
+     * Sets the supplier for the base model rotation.
+     *
+     * @param supplier the rotation supplier
+     * @since 1.15.2
+     */
+    public final void rotation(@NotNull Supplier<ModelRotation> supplier) {
+        this.rotationSupplier = Objects.requireNonNull(supplier);
+    }
+
+    /**
+     * Sets the model rotator strategy.
+     *
+     * @param rotator the rotator strategy
+     * @since 1.15.2
+     */
+    public final void rotator(@NotNull ModelRotator rotator) {
+        this.rotator = Objects.requireNonNull(rotator);
+    }
+
+    /**
+     * Returns the model scaler.
+     *
+     * @return the scaler
+     * @since 1.15.2
+     */
+    public @NotNull ModelScaler scaler() {
+        return scaler;
+    }
+
+    /**
+     * Sets the model scaler.
+     *
+     * @param scaler the new scaler
+     * @since 1.15.2
+     */
+    public void scaler(@NotNull ModelScaler scaler) {
+        this.scaler = Objects.requireNonNull(scaler);
+    }
+
+    /**
+     * Schedules a task to run on the next tracker tick.
+     *
+     * @param runnable the task to run
+     * @since 1.15.2
+     */
+    public void task(@NotNull Runnable runnable) {
+        queuedTask.add(Objects.requireNonNull(runnable));
+    }
+
+    /**
+     * Registers a handler to run every frame (tracker tick).
+     *
+     * @param handler the packet handler
+     * @since 1.15.2
+     */
+    public synchronized void frame(@NotNull ScheduledPacketHandler handler) {
+        this.handler = this.handler.then(Objects.requireNonNull(handler));
+    }
+    /**
+     * Registers a handler to run every Minecraft tick (50ms).
+     *
+     * @param handler the packet handler
+     * @since 1.15.2
+     */
+    public void tick(@NotNull ScheduledPacketHandler handler) {
+        tick(1, handler);
+    }
+    /**
+     * Registers a handler to run every N Minecraft ticks.
+     *
+     * @param tick the interval in Minecraft ticks
+     * @param handler the packet handler
+     * @since 1.15.2
+     */
+    public void tick(long tick, @NotNull ScheduledPacketHandler handler) {
+        schedule(MINECRAFT_TICK_MULTIPLIER * tick, handler);
+    }
+
+    /**
+     * Registers a handler to run every tick for each visible player.
+     *
+     * @param perPlayerHandler the per-player handler
+     * @since 1.15.2
+     */
+    public synchronized void perPlayerTick(@NotNull BiConsumer<Tracker, PlatformPlayer> perPlayerHandler) {
+        var previous = this.perPlayerHandler;
+        this.perPlayerHandler = previous == null ? perPlayerHandler : previous.andThen(perPlayerHandler);
+    }
+
+    /**
+     * Schedules a handler to run periodically.
+     *
+     * @param period the period in tracker ticks
+     * @param handler the packet handler
+     * @since 1.15.2
+     */
+    public void schedule(long period, @NotNull ScheduledPacketHandler handler) {
+        Objects.requireNonNull(handler);
+        if (period <= 0) throw new RuntimeException("period cannot be <= 0");
+        frame(period == 1 ? handler : (t, s) -> {
+            if (frame % period == 0) handler.handle(t, s);
+        });
+    }
+
+    /**
+     * Returns the name of the model being tracked.
+     *
+     * @return the model name
+     * @since 1.15.2
+     */
+    public @NotNull String name() {
+        return pipeline.name();
+    }
+
+    /**
+     * Calculates the height of the model based on its head bone position.
+     *
+     * @return the height
+     * @since 1.15.2
+     */
+    public double height() {
+        return heightSupplier.getAsFloat();
+    }
+
+    /**
+     * Checks if the tracker has been closed.
+     *
+     * @return true if closed, false otherwise
+     * @since 1.15.2
+     */
+    public boolean isClosed() {
+        return isClosed.get();
+    }
+
+    @Override
+    public void close() {
+        close(CloseReason.REMOVE);
+    }
+
+    protected void close(@NotNull CloseReason reason) {
+        if (isClosed.compareAndSet(false, true)) {
+            closeEventHandler.accept(this, reason);
+            shutdown();
+            pipeline.despawn();
+            LogUtil.debug(DebugConfig.DebugOption.TRACKER, () -> getClass().getSimpleName() + " closed: " + name());
+        }
+    }
+
+    /**
+     * Despawns the model for all players without closing the tracker completely.
+     *
+     * @since 1.15.2
+     */
+    public void despawn() {
+        if (!isClosed()) {
+            pipeline.despawn();
+            LogUtil.debug(DebugConfig.DebugOption.TRACKER, () -> getClass().getSimpleName() + " despawned: " + name());
+        }
+    }
+
+    /**
+     * Returns the tracker modifier.
+     *
+     * @return the modifier
+     * @since 1.15.2
+     */
+    public @NotNull TrackerModifier modifier() {
+        return modifier;
+    }
+
+    /**
+     * Pauses or resumes the tracker's ticking.
+     *
+     * @param pause true to pause, false to resume
+     * @return true if the state changed, false otherwise
+     * @since 1.15.2
+     */
+    public boolean pause(boolean pause) {
+        return tickPause.compareAndSet(!pause, pause);
+    }
+
+    /**
+     * Flags the tracker for a forced update on the next tick.
+     *
+     * @param force true to force update
+     * @return true if the state changed
+     * @since 1.15.2
+     */
+    public boolean forceUpdate(boolean force) {
+        return readyForForceUpdate.compareAndSet(!force, force);
+    }
+
+    /**
+     * Spawns the model for a specific player.
+     *
+     * @param player the target player
+     * @param bundler the packet bundler
+     * @return true if spawned successfully
+     * @since 1.15.2
+     */
+    protected boolean spawn(@NotNull PlatformPlayer player, @NotNull PacketBundler bundler) {
+        if (isClosed()) return false;
+        if (!EventUtil.call(ModelSpawnAtPlayerEvent.class, () -> new ModelSpawnAtPlayerEvent(player, this)).triggered()) return false;
+        return pipeline.spawn(player, bundler, spawned -> {
+            LogUtil.debug(DebugConfig.DebugOption.TRACKER, () -> getClass().getSimpleName() + " is spawned at player " + player.name() + ": " + name());
+            task(spawned::load);
+        });
+    }
+
+    /**
+     * Removes the model for a specific player.
+     *
+     * @param player the target player
+     * @return true if removed successfully
+     * @since 1.15.2
+     */
+    public boolean remove(@NotNull PlatformPlayer player) {
+        if (isClosed()) return false;
+        EventUtil.call(ModelDespawnAtPlayerEvent.class, () -> new ModelDespawnAtPlayerEvent(player, this));
+        var result = pipeline.remove(player);
+        if (result) LogUtil.debug(DebugConfig.DebugOption.TRACKER, () -> getClass().getSimpleName() + " is despawned at player " + player.name() + ": " + name());
+        return result;
+    }
+
+    /**
+     * Returns the number of players currently viewing the model.
+     *
+     * @return the player count
+     * @since 1.15.2
+     */
+    public int playerCount() {
+        return pipeline.playerCount();
+    }
+
+    /**
+     * Returns the current location of the model.
+     *
+     * @return the location
+     * @since 1.15.2
+     */
+    public abstract @NotNull PlatformLocation location();
+
+    /**
+     * Plays an animation by name with default settings.
+     *
+     * @param animation the animation name
+     * @return true if the animation started
+     * @since 1.15.2
+     */
+    public boolean animate(@NotNull String animation) {
+        return animate(animation, AnimationModifier.DEFAULT);
+    }
+
+    /**
+     * Plays an animation by name with a modifier.
+     *
+     * @param animation the animation name
+     * @param modifier the animation modifier
+     * @return true if the animation started
+     * @since 1.15.2
+     */
+    public boolean animate(@NotNull String animation, @NotNull AnimationModifier modifier) {
+        return animate(animation, modifier, () -> {});
+    }
+
+    /**
+     * Plays an animation by name with a modifier and a completion task.
+     *
+     * @param animation the animation name
+     * @param modifier the animation modifier
+     * @param removeTask the task to run when the animation ends
+     * @return true if the animation started
+     * @since 1.15.2
+     */
+    public boolean animate(@NotNull String animation, @NotNull AnimationModifier modifier, @NotNull Runnable removeTask) {
+        return renderer().animation(animation)
+            .map(get -> animate(get, modifier, removeTask))
+            .orElse(false);
+    }
+
+    /**
+     * Plays a blueprint animation with a modifier.
+     *
+     * @param animation the blueprint animation
+     * @param modifier the animation modifier
+     * @return true if the animation started
+     * @since 1.15.2
+     */
+    public boolean animate(@NotNull BlueprintAnimation animation, @NotNull AnimationModifier modifier) {
+        return animate(animation, modifier, () -> {});
+    }
+
+    public boolean animate(@NotNull TrackerAnimation<?> animation) {
+        return animation.play(this);
+    }
+
+    public boolean animate(@NotNull TrackerAnimation<?> animation, @NotNull Runnable removeTask) {
+        return animation.play(this, removeTask);
+    }
+
+
+    /**
+     * Plays a blueprint animation on filtered bones.
+     *
+     * @param animation the blueprint animation
+     * @param modifier the animation modifier
+     * @param removeTask the task to run when the animation ends
+     * @return true if the animation started
+     * @since 1.15.2
+     */
+    public boolean animate(@NotNull BlueprintAnimation animation, @NotNull AnimationModifier modifier, @NotNull Runnable removeTask) {
+        var match = false;
+        var script = animation.script(modifier);
+        if (script != null) {
+            scriptProcessor.addAnimation(animation.name(), script.iterator(modifier), modifier, () -> {});
+            match = true;
+        }
+        match |= pipeline.matchAnimation((b, a) -> b.addAnimation(a, animation, modifier, removeTask));
+        if (match && isScheduled()) animationTick();
+        return match;
+    }
+
+    /**
+     * Stops an animation by name.
+     *
+     * @param animation the animation name
+     * @return true if the animation was stopped
+     * @since 1.15.2
+     */
+    public boolean stopAnimation(@NotNull String animation) {
+        return stopAnimation(_ -> true, animation);
+    }
+
+    /**
+     * Stops an animation on filtered bones.
+     *
+     * @param filter the bone filter
+     * @param animation the animation name
+     * @return true if the animation was stopped
+     * @since 1.15.2
+     */
+    public boolean stopAnimation(@NotNull Predicate<RenderedBone> filter, @NotNull String animation) {
+        return stopAnimation(filter, animation, null);
+    }
+
+    /**
+     * Stops an animation on filtered bones for a specific player (optional).
+     *
+     * @param filter the bone filter
+     * @param animation the animation name
+     * @param player the player (can be null)
+     * @return true if the animation was stopped
+     * @since 1.15.2
+     */
+    public boolean stopAnimation(@NotNull Predicate<RenderedBone> filter, @NotNull String animation, @Nullable PlatformPlayer player) {
+        var match = false;
+        match |= scriptProcessor.stopAnimation(animation);
+        match |= pipeline.matchTree(b -> b.stopAnimation(filter, animation, player));
+        if (match && isScheduled()) animationTick();
+        return match;
+    }
+
+    /**
+     * Replaces a running animation on filtered bones.
+     *
+     * @param target the name of the animation to replace
+     * @param animation the name of the new animation
+     * @param modifier the modifier for the new animation
+     * @return true if the replacement occurred
+     * @since 1.15.2
+     */
+    public boolean replace(@NotNull String target, @NotNull String animation, @NotNull AnimationModifier modifier) {
+        return renderer().animation(animation)
+            .map(get -> replace(target, get, modifier))
+            .orElse(false);
+    }
+
+    /**
+     * Replaces a running animation on filtered bones with a blueprint animation.
+     *
+     * @param target the name of the animation to replace
+     * @param animation the new blueprint animation
+     * @param modifier the modifier for the new animation
+     * @return true if the replacement occurred
+     * @since 1.15.2
+     */
+    public boolean replace(@NotNull String target, @NotNull BlueprintAnimation animation, @NotNull AnimationModifier modifier) {
+        var match = false;
+        var script = animation.script(modifier);
+        if (script != null) {
+            scriptProcessor.replaceAnimation(target, script.iterator(modifier), modifier);
+            match = true;
+        }
+        match |= pipeline.matchAnimation((b, a) -> b.replaceAnimation(a, target, animation, modifier));
+        if (match && isScheduled()) animationTick();
+        return match;
+    }
+
+    //--- Listener ---
+
+    /**
+     * Registers a hitbox-listener builder hook that is applied when hitboxes are created.
+     * <p>
+     * This delegates to {@link kr.rioxs.primemodel.api.bone.Bones.BoneEventDispatcher#handleCreateHitBox(BiFunction)}
+     * in this tracker's render pipeline event dispatcher.
+     * </p>
+     *
+     * <pre>{@code
+     * tracker.listenHitBox((bone, builder) -> builder.interact(event -> {
+     *     // custom interaction handling
+     * }));
+     * }</pre>
+     *
+     * @param function the hitbox listener builder transformer
+     * @since 2.1.0
+     */
+    public void listenHitBox(@NotNull BiFunction<RenderedBone, HitBoxListener.Builder, HitBoxListener.Builder> function) {
+        pipeline.hitboxes().forEach(hb -> {
+            var bone = hb.positionSource();
+            hb.listener(b -> function.apply(bone, b));
+        });
+        pipeline.eventDispatcher().handleCreateHitBox(function);
+    }
+
+    /**
+     * Registers a hitbox event listener for newly created hitboxes.
+     * <p>
+     * This is a convenience wrapper over {@link #listenHitBox(BiFunction)}.
+     * </p>
+     *
+     * <pre>{@code
+     * tracker.listenHitBox(HitBoxInteractEvent.class, event -> {
+     *     // custom interaction handling
+     * });
+     * }</pre>
+     *
+     * @param eventClass target hitbox event class
+     * @param consumer event consumer
+     * @param <T> event type
+     * @since 2.1.0
+     */
+    public <T extends HitBoxEvent> void listenHitBox(@NotNull Class<T> eventClass, @NotNull Consumer<T> consumer) {
+        listenHitBox((_, builder) -> builder.listen(eventClass, consumer));
+    }
+
+    /**
+     * Creates a hitbox for bones matching a predicate.
+     *
+     * @param entity the source entity for the hitbox
+     * @param listener the hitbox listener
+     * @param predicate the bone predicate
+     * @return true if any hitboxes were created
+     * @since 1.15.2
+     */
+    public boolean createHitBox(@NotNull BaseEntity entity, @Nullable HitBoxListener listener, @NotNull BonePredicate predicate) {
+        return tryUpdate((b, p) -> b.createHitBox(entity, p, listener), predicate);
+    }
+
+    /**
+     * Retrieves or creates a hitbox for a specific bone.
+     *
+     * @param entity the source entity
+     * @param listener the hitbox listener
+     * @param predicate the bone predicate
+     * @return the hitbox, or null if not found/created
+     * @since 1.15.2
+     */
+    public @Nullable HitBox hitbox(@NotNull BaseEntity entity, @Nullable HitBoxListener listener, @NotNull Predicate<RenderedBone> predicate) {
+        return pipeline.firstNotNull(bone -> {
+            if (predicate.test(bone)) {
+                if (bone.getHitBox() == null) bone.createHitBox(entity, BonePredicate.TRUE, listener);
+                return bone.getHitBox();
+            } else return null;
+        });
+    }
+
+    /**
+     * Creates a nametag for bones matching a predicate.
+     *
+     * @param predicate the bone predicate
+     * @param consumer a consumer to configure the nametag
+     * @return true if any nametags were created
+     * @since 1.15.2
+     */
+    public boolean createNametag(@NotNull BonePredicate predicate, @NotNull BiConsumer<RenderedBone, ModelNametag> consumer) {
+        return tryUpdate((b, p) -> b.createNametag(p, tag -> {
+            consumer.accept(b, tag);
+            perPlayerTick((tracker, player) -> {
+                if (pipeline.getSource() instanceof RenderSource.Entity entity && entity.entity().uuid().equals(player.uuid())) return;
+                tag.teleport(tracker.location());
+                tag.send(player);
+            });
+        }), predicate);
+    }
+
+    //--- Update action ---
+
+    /**
+     * Forces an update action on all bones.
+     *
+     * @param action the update action
+     * @param <T> the action type
+     * @since 1.15.2
+     */
+    public <T extends TrackerUpdateAction> void update(@NotNull T action) {
+        update(action, BonePredicate.TRUE);
+    }
+
+    /**
+     * Forces an update action on filtered bones.
+     *
+     * @param action the update action
+     * @param predicate the bone predicate
+     * @param <T> the action type
+     * @since 1.15.2
+     */
+    public <T extends TrackerUpdateAction> void update(@NotNull T action, @NotNull Predicate<RenderedBone> predicate) {
+        update(action, BonePredicate.from(predicate));
+    }
+
+    /**
+     * Forces an update action on filtered bones.
+     *
+     * @param action the update action
+     * @param predicate the bone predicate
+     * @param <T> the action type
+     * @since 1.15.2
+     */
+    public <T extends TrackerUpdateAction> void update(@NotNull T action, @NotNull BonePredicate predicate) {
+        if (tryUpdate(action, predicate)) forceUpdate(true);
+    }
+
+    /**
+     * Tries to apply an update action to bones matching a predicate.
+     *
+     * @param action the update action
+     * @param predicate the bone predicate
+     * @return true if any bones were updated
+     * @since 1.15.2
+     */
+    public boolean tryUpdate(@NotNull BiPredicate<RenderedBone, BonePredicate> action, @NotNull BonePredicate predicate) {
+        return pipeline.matchTree(predicate, action);
+    }
+
+    /**
+     * Retrieves a bone by name.
+     *
+     * @param name the bone name
+     * @return the bone, or null if not found
+     * @since 1.15.2
+     */
+    public @Nullable RenderedBone bone(@NotNull BoneName name) {
+        return pipeline.boneOf(name);
+    }
+
+    /**
+     * Retrieves a bone by name string.
+     *
+     * @param name the bone name
+     * @return the bone, or null if not found
+     * @since 1.15.2
+     */
+    public @Nullable RenderedBone bone(@NotNull String name) {
+        return bone(BonePredicate.name(name));
+    }
+
+    /**
+     * Retrieves the first bone matching a predicate.
+     *
+     * @param predicate the bone predicate
+     * @return the bone, or null if not found
+     * @since 1.15.2
+     */
+    public @Nullable RenderedBone bone(@NotNull Predicate<RenderedBone> predicate) {
+        return pipeline.stream()
+            .filter(predicate)
+            .findFirst()
+            .orElse(null);
+    }
+
+    /**
+     * Returns a collection of all bones in the model.
+     *
+     * @return the bones
+     * @since 1.15.2
+     */
+    public @NotNull @Unmodifiable Collection<RenderedBone> bones() {
+        return pipeline.bones();
+    }
+
+    /**
+     * Returns a stream of all model displays.
+     *
+     * @return the displays
+     * @since 1.15.2
+     */
+    public @NotNull Stream<ModelDisplay> displays() {
+        return pipeline.stream()
+            .map(RenderedBone::getDisplay)
+            .filter(Objects::nonNull);
+    }
+
+    /**
+     * Hides the tracker from a specific player.
+     *
+     * @param player the target player
+     * @return true if hidden successfully
+     * @since 1.15.2
+     */
+    public boolean hide(@NotNull PlatformPlayer player) {
+        return EventUtil.call(PlayerHideTrackerEvent.class, () -> new PlayerHideTrackerEvent(this, player)).triggered() && pipeline.hide(player);
+    }
+
+    /**
+     * Checks if the tracker is hidden from a specific player.
+     *
+     * @param player the target player
+     * @return true if hidden
+     * @since 1.15.2
+     */
+    public boolean isHide(@NotNull PlatformPlayer player) {
+        return pipeline.isHide(player);
+    }
+
+    /**
+     * Shows the tracker to a specific player.
+     *
+     * @param player the target player
+     * @return true if shown successfully
+     * @since 1.15.2
+     */
+    public boolean show(@NotNull PlatformPlayer player) {
+        return EventUtil.call(PlayerShowTrackerEvent.class, () -> new PlayerShowTrackerEvent(this, player)).triggered() && pipeline.show(player);
+    }
+
+    /**
+     * Registers a handler for the tracker close event.
+     *
+     * @param consumer the handler
+     * @since 1.15.2
+     */
+    public void handleCloseEvent(@NotNull BiConsumer<Tracker, CloseReason> consumer) {
+        closeEventHandler = closeEventHandler.andThen(Objects.requireNonNull(consumer));
+    }
+
+    /**
+     * Checks if the model is spawned for a player (by UUID).
+     *
+     * @param uuid the player UUID
+     * @return true if spawned
+     * @since 1.15.2
+     */
+    public boolean isSpawned(@NotNull UUID uuid) {
+        return pipeline.isSpawned(uuid);
+    }
+
+    /**
+     * Checks if the model is spawned for a player.
+     *
+     * @param player the player
+     * @return true if spawned
+     * @since 1.15.2
+     */
+    public boolean isSpawned(@NotNull PlatformPlayer player) {
+        return isSpawned(player.uuid());
+    }
+
+    /**
+     * Returns the renderer associated with this tracker.
+     *
+     * @return the renderer
+     * @since 1.15.2
+     */
+    public @NotNull ModelRenderer renderer() {
+        return pipeline.getParent();
+    }
+
+    /**
+     * Marks the tracker for removal.
+     *
+     * @param removal true to mark for removal
+     * @since 1.15.2
+     */
+    @ApiStatus.Internal
+    public void forRemoval(boolean removal) {
+        forRemoval.set(removal);
+    }
+
+    /**
+     * Checks if the tracker is marked for removal.
+     *
+     * @return true if marked for removal
+     * @since 1.15.2
+     */
+    @ApiStatus.Internal
+    public boolean forRemoval() {
+        return forRemoval.get();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof Tracker tracker)) return false;
+        return name().equals(tracker.name());
+    }
+
+    @Override
+    public int hashCode() {
+        return name().hashCode();
+    }
+
+    /**
+     * Functional interface for handling scheduled packets.
+     *
+     * @since 1.15.2
+     */
+    @FunctionalInterface
+    public interface ScheduledPacketHandler {
+        /**
+         * Handles packets for a tracker.
+         *
+         * @param tracker the tracker
+         * @param bundlerSet the set of packet bundlers
+         * @since 1.15.2
+         */
+        void handle(@NotNull Tracker tracker, @NotNull BundlerSet bundlerSet);
+
+        /**
+         * Chains this handler with another.
+         *
+         * @param other the other handler
+         * @return the combined handler
+         * @since 1.15.2
+         */
+        default @NotNull ScheduledPacketHandler then(@NotNull ScheduledPacketHandler other) {
+            return (t, s) -> {
+                handle(t, s);
+                other.handle(t, s);
+            };
+        }
+    }
+
+    /**
+     * Holds different types of packet bundlers for a tracker tick.
+     *
+     * @since 1.15.2
+     */
+    public final class BundlerSet {
+        @Getter
+        private PacketBundler tickBundler = pipeline.createBundler();
+        @Getter
+        private PacketBundler dataBundler = pipeline.createBundler();
+        @Getter
+        private AnimationBundler viewBundler = pipeline.createAnimationBundler();
+
+        private final Map<UUID, PerPlayerCache> perPlayerViewBundler = new ConcurrentHashMap<>();
+
+        /**
+         * Private initializer
+         */
+        private BundlerSet() {
+        }
+
+        private void send() {
+            globalSend();
+            perPlayerSend();
+        }
+
+        private void perPlayerSend() {
+            if (perPlayerViewBundler.isEmpty()) return;
+            perPlayerViewBundler.values().forEach(PerPlayerCache::send);
+        }
+
+        private void globalSend() {
+            if (tickBundler.isNotEmpty()) {
+                pipeline.allPlayer().map(PlayerChannelHandler::player).forEach(tickBundler::send);
+                tickBundler = pipeline.createBundler();
+            }
+            if (dataBundler.isNotEmpty()) {
+                pipeline.nonHidePlayer().map(PlayerChannelHandler::player).forEach(dataBundler::send);
+                dataBundler = pipeline.createBundler();
+            }
+            if (viewBundler.isNotEmpty()) {
+                pipeline.viewedPlayer().filter(p -> !perPlayerViewBundler.containsKey(p.uuid())).forEach(viewBundler::send);
+                viewBundler = pipeline.createAnimationBundler();
+            }
+        }
+    }
+
+    @RequiredArgsConstructor
+    private final class PerPlayerCache {
+        private final UUID uuid;
+        private final AtomicInteger counter = new AtomicInteger();
+        private AnimationBundler bundler = pipeline.createAnimationBundler();
+
+        private @NotNull Optional<PlayerChannelHandler> channel() {
+            return Optional.ofNullable(pipeline.channel(uuid));
+        }
+
+        public void add() {
+            if (counter.getAndIncrement() == 0) {
+                channel().ifPresent(handler -> EventUtil.call(PlayerPerAnimationStartEvent.class, () -> new PlayerPerAnimationStartEvent(Tracker.this, handler.player())));
+            }
+        }
+
+        public void remove() {
+            if (counter.decrementAndGet() == 0) {
+                bundlerSet.perPlayerViewBundler.remove(uuid);
+                channel().ifPresent(handler -> {
+                    var bundler = pipeline.createBundler();
+                    pipeline.forEach(bone -> bone.forceTransformation(bundler));
+                    bundler.send(handler.player());
+                    EventUtil.call(PlayerPerAnimationEndEvent.class, () -> new PlayerPerAnimationEndEvent(Tracker.this, handler.player()));
+                });
+            }
+        }
+
+        private void send() {
+            if (pipeline.tick(uuid, bundler) && bundler.isNotEmpty()) {
+                channel().ifPresent(handler -> bundler.send(handler));
+                bundler = pipeline.createAnimationBundler();
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        return name();
+    }
+
+    /**
+     * Reason for closing a tracker.
+     *
+     * @since 1.15.2
+     */
+    @RequiredArgsConstructor
+    public enum CloseReason {
+        /**
+         * The tracker was manually removed.
+         * @since 1.15.2
+         */
+        REMOVE(false),
+        /**
+         * The plugin is being disabled.
+         * @since 1.15.2
+         */
+        PLUGIN_DISABLE(true),
+        /**
+         * The entity or tracker was despawned.
+         * @since 1.15.2
+         */
+        DESPAWN(true)
+        ;
+        private final boolean save;
+
+        /**
+         * Checks if the tracker state should be saved.
+         *
+         * @return true if it should be saved
+         * @since 1.15.2
+         */
+        public boolean shouldBeSave() {
+            return save;
+        }
+    }
+}

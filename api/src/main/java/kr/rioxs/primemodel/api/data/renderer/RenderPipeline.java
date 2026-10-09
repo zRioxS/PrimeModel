@@ -1,0 +1,650 @@
+package kr.rioxs.primemodel.api.data.renderer;
+import kr.rioxs.primemodel.api.manager.Managers.Manager;
+import kr.rioxs.primemodel.api.bone.Bones.BoneEventHandler;
+import kr.rioxs.primemodel.api.bone.Bones.BoneEventDispatcher;
+
+import kr.rioxs.primemodel.api.PrimeModel;
+import kr.rioxs.primemodel.api.animation.Animations.AnimationModifier.AnimationOverrideState;
+import kr.rioxs.primemodel.api.animation.Animations.AnimationModifier.RunningAnimation;
+import kr.rioxs.primemodel.api.bone.*;
+import kr.rioxs.primemodel.api.manager.Managers.PlayerManager;
+import kr.rioxs.primemodel.api.nms.AnimationBundler;
+import kr.rioxs.primemodel.api.nms.HitBox;
+import kr.rioxs.primemodel.api.nms.PacketBundler;
+import kr.rioxs.primemodel.api.nms.PlayerChannelHandler;
+import kr.rioxs.primemodel.api.platform.PlatformPlayer;
+import kr.rioxs.primemodel.api.tracker.TrackerUtils.ModelRotation;
+import kr.rioxs.primemodel.api.util.Utils.FunctionUtil;
+import kr.rioxs.primemodel.api.util.Utils.BonePredicate;
+import kr.rioxs.primemodel.api.util.Utils.Functions.FloatSupplier;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import static kr.rioxs.primemodel.api.util.Utils.CollectionUtil.associate;
+import static kr.rioxs.primemodel.api.util.Utils.CollectionUtil.associateSequenced;
+
+/**
+ * Represents the rendering pipeline for a specific model instance.
+ * <p>
+ * This class manages the hierarchy of {@link RenderedBone}s, handles player visibility and packet bundling,
+ * and coordinates animation updates and inverse kinematics (IK) solving.
+ * </p>
+ *
+ * @since 1.15.2
+ */
+public final class RenderPipeline implements BoneEventHandler, Iterable<RenderedBone> {
+
+    @Getter
+    private final ModelRenderer parent;
+    @Getter
+    private final RenderSource<?> source;
+
+    private final RenderedBone[] bones;
+    private final RenderedBone[] flattenBones;
+    private final SequencedMap<BoneName, RenderedBone> byIdMap;
+
+    private final int displayAmount;
+    private final Map<UUID, SpawnedPlayer> playerMap = new ConcurrentHashMap<>();
+    private final Set<UUID> hidePlayerSet = ConcurrentHashMap.newKeySet();
+
+    private final BoneEventDispatcher eventDispatcher = new BoneEventDispatcher();
+    private final BoneIKSolver ikSolver;
+
+    private Predicate<PlatformPlayer> viewFilter = _ -> true;
+    private Predicate<PlatformPlayer> hideFilter = p -> hidePlayerSet.contains(p.uuid());
+
+    private Consumer<PacketBundler> spawnPacketHandler = _ -> {};
+    private Consumer<PacketBundler> despawnPacketHandler = _ -> {};
+    private Consumer<PacketBundler> hidePacketHandler = _ -> {};
+    private Consumer<PacketBundler> showPacketHandler = _ -> {};
+
+    @Getter
+    private ModelRotation rotation = ModelRotation.INVALID;
+
+    /**
+     * Creates a new render pipeline.
+     *
+     * @param parent the parent model renderer
+     * @param source the source of the rendering (entity or location)
+     * @param bones the array of root bones
+     * @since 1.15.2
+     */
+    public RenderPipeline(
+        @NotNull ModelRenderer parent,
+        @NotNull RenderSource<?> source,
+        @NotNull RenderedBone[] bones
+    ) {
+        this.parent = parent;
+        this.source = source;
+        this.bones = bones;
+        // Bone
+        flattenBones = Arrays.stream(bones).flatMap(RenderedBone::flatten).toArray(RenderedBone[]::new);
+        byIdMap = associateSequenced(flattenBones, RenderedBone::name);
+        ikSolver = new BoneIKSolver(associate(flattenBones, RenderedBone::uuid));
+        // Setup
+        displayAmount = (int) Arrays.stream(flattenBones)
+            .peek(bone -> bone.extend(this))
+            .peek(bone -> bone.locator(ikSolver))
+            .filter(rb -> rb.getDisplay() != null)
+            .count();
+    }
+
+    /**
+     * Creates a packet bundler for this pipeline.
+     *
+     * @return a new packet bundler
+     * @since 1.15.2
+     */
+    public @NotNull PacketBundler createBundler() {
+        return PrimeModel.nms().createBundler(displayAmount + 1);
+    }
+
+    /**
+     * Retrieves the channel handler for a specific player.
+     *
+     * @param uuid the UUID of the player
+     * @return the channel handler, or null if not found
+     * @since 1.15.2
+     */
+    public @Nullable PlayerChannelHandler channel(@NotNull UUID uuid) {
+        var get = playerMap.get(uuid);
+        return get != null ? get.handler : null;
+    }
+
+    /**
+     * Creates an animation packet bundler based on configuration.
+     *
+     * @return a new animation packet bundler
+     * @since 2.2.1
+     */
+    public @NotNull AnimationBundler createAnimationBundler() {
+        var size = PrimeModel.config().packetBundlingSize();
+        var nms = PrimeModel.nms();
+        return new AnimationBundler(
+            size <= 0 ? createBundler() : nms.createParallelBundler(size),
+            nms.createModAnimationBuilder(displayAmount)
+        );
+    }
+
+    @Override
+    public @NotNull BoneEventDispatcher eventDispatcher() {
+        return eventDispatcher;
+    }
+
+    /**
+     * Adds a filter to restrict which players can view the model.
+     *
+     * @param filter the predicate to filter players
+     * @since 1.15.2
+     */
+    public void viewFilter(@NotNull Predicate<PlatformPlayer> filter) {
+        this.viewFilter = this.viewFilter.and(Objects.requireNonNull(filter));
+    }
+
+    /**
+     * Adds a filter to determine if a player should be hidden from the model.
+     *
+     * @param filter the predicate to hide players
+     * @since 1.15.2
+     */
+    public void hideFilter(@NotNull Predicate<PlatformPlayer> filter) {
+        this.hideFilter = this.hideFilter.or(Objects.requireNonNull(filter));
+    }
+
+    /**
+     * Adds a handler for spawn packets.
+     *
+     * @param spawnPacketHandler the consumer to handle spawn packets
+     * @since 1.15.2
+     */
+    public void spawnPacketHandler(@NotNull Consumer<PacketBundler> spawnPacketHandler) {
+        this.spawnPacketHandler = this.spawnPacketHandler.andThen(Objects.requireNonNull(spawnPacketHandler));
+    }
+
+    /**
+     * Adds a handler for despawn packets.
+     *
+     * @param despawnPacketHandler the consumer to handle despawn packets
+     * @since 1.15.2
+     */
+    public void despawnPacketHandler(@NotNull Consumer<PacketBundler> despawnPacketHandler) {
+        this.despawnPacketHandler = this.despawnPacketHandler.andThen(Objects.requireNonNull(despawnPacketHandler));
+    }
+
+    /**
+     * Adds a handler for hide packets.
+     *
+     * @param despawnPacketHandler the consumer to handle hide packets
+     * @since 1.15.2
+     */
+    public void hidePacketHandler(@NotNull Consumer<PacketBundler> despawnPacketHandler) {
+        this.hidePacketHandler = this.hidePacketHandler.andThen(Objects.requireNonNull(despawnPacketHandler));
+    }
+
+    /**
+     * Adds a handler for show packets.
+     *
+     * @param despawnPacketHandler the consumer to handle show packets
+     * @since 1.15.2
+     */
+    public void showPacketHandler(@NotNull Consumer<PacketBundler> despawnPacketHandler) {
+        this.showPacketHandler = this.showPacketHandler.andThen(Objects.requireNonNull(despawnPacketHandler));
+    }
+
+    /**
+     * Checks if the model is spawned for a specific player.
+     *
+     * @param uuid the UUID of the player
+     * @return true if spawned, false otherwise
+     * @since 1.15.2
+     */
+    public boolean isSpawned(@NotNull UUID uuid) {
+        return playerMap.containsKey(uuid);
+    }
+
+    /**
+     * Retrieves the currently running animation, if any.
+     *
+     * @return the running animation, or null if none
+     * @since 1.15.2
+     */
+    public @Nullable RunningAnimation runningAnimation() {
+        return firstNotNull(RenderedBone::runningAnimation);
+    }
+
+    /**
+     * Returns the name of the model.
+     *
+     * @return the model name
+     * @since 1.15.2
+     */
+    public @NotNull String name() {
+        return parent.name();
+    }
+
+    /**
+     * Despawns the model for all players and clears internal state.
+     *
+     * @since 1.15.2
+     */
+    public void despawn() {
+        hitboxes().forEach(HitBox::removeHitBox);
+        var bundler = createBundler();
+        remove0(bundler);
+        if (bundler.isNotEmpty()) allPlayer().map(PlayerChannelHandler::player).forEach(bundler::send);
+        playerMap.clear();
+    }
+
+    /**
+     * Rotates the model to a new orientation.
+     *
+     * @param rotation the new rotation
+     * @param bundler the packet bundler to use
+     * @return true if the rotation changed, false otherwise
+     * @since 1.15.2
+     */
+    public boolean rotate(@NotNull ModelRotation rotation, @NotNull PacketBundler bundler) {
+        if (rotation.equals(this.rotation)) return false;
+        this.rotation = rotation;
+        return matchTree(b -> b.rotate(rotation, bundler));
+    }
+
+    /**
+     * Ticks the model, updating animations and IK.
+     *
+     * @param bundler the packet bundler to use
+     * @return true if any updates occurred
+     * @since 1.15.2
+     */
+    public boolean tick(@NotNull AnimationBundler bundler) {
+        var match = matchTree(RenderedBone::tick);
+        if (match) {
+            ikSolver.solve();
+            forEach(b -> b.sendTransformation(null, bundler));
+        }
+        return match;
+    }
+
+    /**
+     * Ticks the model for a specific player (e.g., for per-player animations).
+     *
+     * @param uuid the UUID of the player
+     * @param bundler the packet bundler to use
+     * @return true if any updates occurred
+     * @since 1.15.2
+     */
+    public boolean tick(@NotNull UUID uuid, @NotNull AnimationBundler bundler) {
+        var match = matchTree(b -> b.tick(uuid));
+        if (match) {
+            ikSolver.solve(uuid);
+            forEach(b -> b.sendTransformation(uuid, bundler));
+        }
+        return match;
+    }
+
+    /**
+     * Sets the default position modifier for all bones.
+     *
+     * @param movement the movement function
+     * @since 1.15.2
+     */
+    public void defaultPosition(@NotNull Function<Vector3f, Vector3f> movement) {
+        var vec = new Vector3f();
+        var supplier = FunctionUtil.throttleTick(() -> movement.apply(vec));
+        forEach(b -> b.defaultPosition(supplier));
+    }
+
+    /**
+     * Scales the model.
+     *
+     * @param scale the scale supplier
+     * @since 1.15.2
+     */
+    public void scale(@NotNull FloatSupplier scale) {
+        forEach(b -> b.scale(scale));
+    }
+
+    /**
+     * Adds a local rotation modifier to matching bones.
+     *
+     * @param predicate the predicate to select bones
+     * @param mapper the rotation mapping function
+     * @return true if any bones were modified
+     * @since 3.0.0
+     */
+    public boolean addLocalRotModifier(@NotNull BonePredicate predicate, @NotNull Function<Quaternionf, Quaternionf> mapper) {
+        return matchTree(predicate, (b, p) -> b.addLocalRotModifier(p, mapper));
+    }
+
+    /**
+     * Adds a global rotation modifier to matching bones.
+     *
+     * @param predicate the predicate to select bones
+     * @param mapper the rotation mapping function
+     * @return true if any bones were modified
+     * @since 3.0.0
+     */
+    public boolean addGlobalRotModifier(@NotNull BonePredicate predicate, @NotNull Function<Quaternionf, Quaternionf> mapper) {
+        return matchTree(predicate, (b, p) -> b.addGlobalRotModifier(p, mapper));
+    }
+
+    /**
+     * Adds a position modifier to matching bones.
+     *
+     * @param predicate the predicate to select bones
+     * @param mapper the position mapping function
+     * @return true if any bones were modified
+     * @since 1.15.2
+     */
+    public boolean addPositionModifier(@NotNull BonePredicate predicate, @NotNull Function<Vector3f, Vector3f> mapper) {
+        return matchTree(predicate, (b, p) -> b.addPositionModifier(p, mapper));
+    }
+
+    /**
+     * Returns a collection of all bones in this pipeline.
+     *
+     * @return the collection of bones
+     * @since 1.15.2
+     */
+    public @NotNull @Unmodifiable Collection<RenderedBone> bones() {
+        return byIdMap.values();
+    }
+
+    /**
+     * Returns a stream of all hitboxes associated with this model.
+     *
+     * @return the stream of hitboxes
+     * @since 1.15.2
+     */
+    public @NotNull Stream<HitBox> hitboxes() {
+        return stream()
+            .map(RenderedBone::getHitBox)
+            .filter(Objects::nonNull);
+    }
+
+    /**
+     * Retrieves a bone by its name.
+     *
+     * @param name the name of the bone
+     * @return the rendered bone, or null if not found
+     * @since 1.15.2
+     */
+    public @Nullable RenderedBone boneOf(@NotNull BoneName name) {
+        return byIdMap.get(name);
+    }
+
+    /**
+     * Spawns the model for a player.
+     *
+     * @param player the player to spawn for
+     * @param bundler the packet bundler to use
+     * @param consumer a consumer for the spawned player object
+     * @return true if spawned successfully
+     * @since 1.15.2
+     */
+    @ApiStatus.Internal
+    public boolean spawn(@NotNull PlatformPlayer player, @NotNull PacketBundler bundler, @NotNull Consumer<SpawnedPlayer> consumer) {
+        var get = PrimeModel.platform().manager(PlayerManager.class).player(player.uuid());
+        if (get == null) return false;
+        var spawnedPlayer = new SpawnedPlayer(get);
+        playerMap.put(player.uuid(), spawnedPlayer);
+        spawnPacketHandler.accept(bundler);
+        var hided = isHide(player);
+        forEach(b -> b.spawn(hided, bundler));
+        consumer.accept(spawnedPlayer);
+        return true;
+    }
+
+    /**
+     * Removes the model for a player.
+     *
+     * @param player the player to remove for
+     * @return true if removed successfully
+     * @since 1.15.2
+     */
+    @ApiStatus.Internal
+    public boolean remove(@NotNull PlatformPlayer player) {
+        if (playerMap.remove(player.uuid()) == null) return false;
+        var bundler = createBundler();
+        remove0(bundler);
+        bundler.send(player);
+        return true;
+    }
+
+    @ApiStatus.Internal
+    private void remove0(@NotNull PacketBundler bundler) {
+        despawnPacketHandler.accept(bundler);
+        forEach(b -> b.remove(bundler));
+    }
+
+    /**
+     * Applies a mapper to bones matching a predicate.
+     *
+     * @param predicate the bone predicate
+     * @param mapper the mapper function
+     * @return true if any bones matched
+     * @since 1.15.2
+     */
+    public boolean matchTree(@NotNull BonePredicate predicate, BiPredicate<RenderedBone, BonePredicate> mapper) {
+        Objects.requireNonNull(predicate);
+        Objects.requireNonNull(mapper);
+        if (predicate == BonePredicate.FALSE) return false;
+        if (predicate == BonePredicate.TRUE || predicate.applyAtChildren() == BonePredicate.State.NOT_SET) return matchTree(b -> mapper.test(b, predicate));
+        var result = false;
+        for (RenderedBone value : bones) {
+            if (value.matchTree(predicate, mapper)) result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Applies a mapper to bones matching an animation predicate.
+     *
+     * @param mapper the mapper function
+     * @return true if any bones matched
+     * @since 1.15.2
+     */
+    public boolean matchAnimation(@NotNull BiPredicate<RenderedBone, AnimationOverrideState> mapper) {
+        Objects.requireNonNull(mapper);
+        var result = false;
+        for (RenderedBone value : bones) {
+            if (value.matchAnimation(AnimationOverrideState.NOT_MATCHED, mapper)) result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Checks if any bones match a predicate.
+     *
+     * @param predicate the predicate
+     * @return true if any bones matched
+     * @since 1.15.2
+     */
+    public boolean matchTree(@NotNull Predicate<RenderedBone> predicate) {
+        Objects.requireNonNull(predicate);
+        var result = false;
+        for (RenderedBone value : flattenBones) {
+            if (predicate.test(value)) result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Finds the first non-null result of applying a mapper to all bones.
+     *
+     * @param mapper the mapper function
+     * @param <T> the result type
+     * @return the first non-null result, or null
+     * @since 1.15.2
+     */
+    public <T> @Nullable T firstNotNull(@NotNull Function<RenderedBone, T> mapper) {
+        Objects.requireNonNull(mapper);
+        for (RenderedBone value : flattenBones) {
+            var t = mapper.apply(value);
+            if (t != null) return t;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the number of players currently viewing this model.
+     *
+     * @return the player count
+     * @since 1.15.2
+     */
+    public int playerCount() {
+        return playerMap.size();
+    }
+
+    /**
+     * Returns a stream of all players viewing this model.
+     *
+     * @return the stream of players
+     * @since 1.15.2
+     */
+    public @NotNull Stream<PlayerChannelHandler> allPlayer() {
+        return playerMap.values()
+            .stream()
+            .map(spawned -> spawned.handler);
+    }
+
+    /**
+     * Returns a stream of players who are not hidden and pass the view filter.
+     *
+     * @return the stream of visible players
+     * @since 1.15.2
+     */
+    public @NotNull Stream<PlayerChannelHandler> nonHidePlayer() {
+        return playerMap.values()
+            .stream()
+            .filter(spawned -> spawned.initialLoad)
+            .map(spawned -> spawned.handler)
+            .filter(p -> !hideFilter.test(p.player()));
+    }
+
+    /**
+     * Returns a stream of players who pass the view filter (regardless of hidden status).
+     *
+     * @return the stream of viewed players
+     * @since 1.15.2
+     */
+    public @NotNull Stream<PlayerChannelHandler> viewedPlayer() {
+        return allPlayer().filter(channel -> viewFilter.test(channel.player()));
+    }
+
+    /**
+     * Hides the model from a specific player.
+     *
+     * @param player the player to hide from
+     * @return true if the player was successfully hidden
+     * @since 1.15.2
+     */
+    public boolean hide(@NotNull PlatformPlayer player) {
+        if (isHide(player) || !hidePlayerSet.add(player.uuid())) return false;
+        if (isSpawned(player.uuid())) {
+            var bundler = createBundler();
+            forEach(b -> b.forceUpdate(false, bundler));
+            hidePacketHandler.accept(bundler);
+            if (bundler.isNotEmpty()) bundler.send(player);
+        }
+        player.task(() -> hitboxes().forEach(hb -> hb.hide(player)));
+        return true;
+    }
+
+    /**
+     * Checks if the model is hidden from a specific player.
+     *
+     * @param player the player to check
+     * @return true if hidden
+     * @since 1.15.2
+     */
+    public boolean isHide(@NotNull PlatformPlayer player) {
+        return hideFilter.test(player);
+    }
+
+    /**
+     * Shows the model to a specific player (if previously hidden).
+     *
+     * @param player the player to show to
+     * @return true if the player was successfully shown
+     * @since 1.15.2
+     */
+    public boolean show(@NotNull PlatformPlayer player) {
+        if (!isHide(player) || !hidePlayerSet.remove(player.uuid())) return false;
+        if (isSpawned(player.uuid())) {
+            var bundler = createBundler();
+            forEach(b -> b.forceUpdate(true, bundler));
+            showPacketHandler.accept(bundler);
+            if (bundler.isNotEmpty()) bundler.send(player);
+        }
+        player.task(() -> hitboxes().forEach(hb -> hb.show(player)));
+        return true;
+    }
+
+    @Override
+    public void forEach(@NotNull Consumer<? super RenderedBone> action) {
+        for (RenderedBone bone : flattenBones) {
+            action.accept(bone);
+        }
+    }
+
+    @Override
+    @NotNull
+    public Iterator<RenderedBone> iterator() {
+        return bones().iterator();
+    }
+
+    @Override
+    @NotNull
+    public Spliterator<RenderedBone> spliterator() {
+        return Arrays.spliterator(flattenBones);
+    }
+
+    /**
+     * Returns a sequential {@code Stream} with the flattened bones as its source.
+     *
+     * @return a stream of all bones in this pipeline
+     * @since 2.2.0
+     */
+    public @NotNull Stream<RenderedBone> stream() {
+        return Arrays.stream(flattenBones);
+    }
+
+    /**
+     * Represents a player for whom the model has been spawned.
+     *
+     * @since 1.15.2
+     */
+    @RequiredArgsConstructor
+    public class SpawnedPlayer {
+        private final PlayerChannelHandler handler;
+        private boolean initialLoad;
+
+        /**
+         * Loads the model for this player, sending initial packets.
+         *
+         * @since 1.15.2
+         */
+        public void load() {
+            initialLoad = true;
+            if (isHide(handler.player())) return;
+            var b = createBundler();
+            forEach(bone -> bone.forceUpdate(b));
+            if (b.isNotEmpty()) b.send(handler.player());
+        }
+    }
+}

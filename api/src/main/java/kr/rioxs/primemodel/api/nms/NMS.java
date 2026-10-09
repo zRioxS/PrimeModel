@@ -1,0 +1,245 @@
+package kr.rioxs.primemodel.api.nms;
+
+import kr.rioxs.primemodel.api.PrimeModel;
+import kr.rioxs.primemodel.api.bone.RenderedBone;
+import kr.rioxs.primemodel.api.data.blueprint.Blueprints.ModelBoundingBox;
+import kr.rioxs.primemodel.api.entity.BaseEntity;
+import kr.rioxs.primemodel.api.entity.BasePlayer;
+import kr.rioxs.primemodel.api.mount.MountController;
+import kr.rioxs.primemodel.api.platform.PlatformEntity;
+import kr.rioxs.primemodel.api.platform.PlatformItemStack;
+import kr.rioxs.primemodel.api.platform.PlatformLocation;
+import kr.rioxs.primemodel.api.platform.PlatformPlayer;
+import kr.rioxs.primemodel.api.profile.Profiles.ModelProfile;
+import kr.rioxs.primemodel.api.tracker.EntityTrackerRegistry;
+import kr.rioxs.primemodel.api.util.Utils.TransformedItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+
+/**
+ * Handles direct interactions with Minecraft's internal server code (NMS).
+ * <p>
+ * This interface provides methods for creating displays, managing packets, handling hitboxes,
+ * and adapting entities for different server environments (e.g., Folia).
+ * </p>
+ *
+ * @since 1.15.2
+ */
+public interface NMS {
+
+    /**
+     * Creates a model display at the specified location.
+     *
+     * @param location the starting location
+     * @return the created model display
+     * @since 1.15.2
+     */
+    default @NotNull ModelDisplay create(@NotNull PlatformLocation location) {
+        return create(location, 0, _ -> {});
+    }
+
+    /**
+     * Creates a model display at the specified location with an initial configuration.
+     *
+     * @param location the starting location
+     * @param initialConsumer a consumer to configure the display upon creation
+     * @return the created model display
+     * @since 1.15.2
+     */
+    default @NotNull ModelDisplay create(@NotNull PlatformLocation location, @NotNull Consumer<ModelDisplay> initialConsumer) {
+        return create(location, 0, initialConsumer);
+    }
+
+    /**
+     * Creates a model display at the specified location with a Y-offset and initial configuration.
+     *
+     * @param location the starting location
+     * @param yOffset the vertical offset
+     * @param initialConsumer a consumer to configure the display upon creation
+     * @return the created model display
+     * @since 1.15.2
+     */
+    @NotNull ModelDisplay create(@NotNull PlatformLocation location, double yOffset, @NotNull Consumer<ModelDisplay> initialConsumer);
+
+    /**
+     * Creates a nametag for a rendered bone.
+     *
+     * @param bone the bone to attach the nametag to
+     * @return the created nametag
+     * @since 1.15.2
+     */
+    @NotNull ModelNametag createNametag(@NotNull RenderedBone bone);
+
+    /**
+     * Creates a nametag for a rendered bone with configuration.
+     *
+     * @param bone the bone to attach the nametag to
+     * @param consumer a consumer to configure the nametag
+     * @return the created nametag
+     * @since 1.15.2
+     */
+    default @NotNull ModelNametag createNametag(@NotNull RenderedBone bone, @NotNull Consumer<ModelNametag> consumer) {
+        var created = createNametag(bone);
+        consumer.accept(created);
+        return created;
+    }
+
+    /**
+     * Injects a Netty channel handler into a player's connection.
+     *
+     * @param player the player to inject
+     * @return the created channel handler
+     * @since 1.15.2
+     */
+    @NotNull PlayerChannelHandler inject(@NotNull PlatformPlayer player);
+
+    /**
+     * Creates a packet bundler with an initial capacity.
+     *
+     * @param initialCapacity the initial capacity
+     * @return the packet bundler
+     * @since 1.15.2
+     */
+    @NotNull PacketBundler createBundler(int initialCapacity);
+
+    /**
+     * Creates a parallel packet bundler with a size threshold.
+     *
+     * @param threshold the size threshold for parallel processing
+     * @return the packet bundler
+     * @since 1.15.2
+     */
+    @NotNull PacketBundler createParallelBundler(int threshold);
+
+    /**
+     * Creates a mod animation bundler.
+     *
+     * @param initialCapacity the initial capacity
+     * @return mod animation bundler.
+     * @since 2.2.1
+     */
+    @NotNull ModAnimationBundler createModAnimationBuilder(int initialCapacity);
+
+    /**
+     * Applies a tint color to an item stack.
+     *
+     * @param itemStack the item to tint
+     * @param rgb the RGB color value
+     * @return the tinted item stack
+     * @since 1.15.2
+     */
+    @NotNull PlatformItemStack tint(@NotNull PlatformItemStack itemStack, int rgb);
+
+    /**
+     * Adds a mount packet for an entity tracker to a bundler.
+     *
+     * @param registry the entity tracker registry
+     * @param bundler the packet bundler
+     * @since 1.15.2
+     */
+    void mount(@NotNull EntityTrackerRegistry registry, @NotNull PacketBundler bundler);
+
+    /**
+     * Sends a hide packet for an entity to a player via their channel handler.
+     *
+     * @param channel the player's channel handler
+     * @param registry the entity tracker registry
+     * @since 1.15.2
+     */
+    void hide(@NotNull PlayerChannelHandler channel, @NotNull EntityTrackerRegistry registry);
+
+    /**
+     * Sends a hide packet for an entity to a player if a condition is met.
+     * <p>
+     * For players, the hide operation is delayed based on configuration.
+     * </p>
+     *
+     * @param channel the player's channel handler
+     * @param registry the entity tracker registry
+     * @param condition the condition to check
+     * @since 1.15.2
+     */
+    default void hide(@NotNull PlayerChannelHandler channel, @NotNull EntityTrackerRegistry registry, @NotNull BooleanSupplier condition) {
+        if (registry.entity() instanceof BasePlayer) {
+            var plugin = PrimeModel.platform();
+            plugin.scheduler().asyncTaskLater(plugin.config().playerHideDelay(), () -> {
+                if (condition.getAsBoolean()) hide(channel, registry);
+            });
+        } else hide(channel, registry);
+    }
+
+    /**
+     * Creates a delegate hitbox for a target entity.
+     *
+     * @param entity the target entity
+     * @param bone the bone associated with the hitbox
+     * @param boundingBox the bounding box definition
+     * @param controller the mount controller
+     * @param listener the hitbox listener
+     * @return the created hitbox, or null if creation failed
+     * @since 1.15.2
+     */
+    @Nullable HitBox createHitBox(@NotNull BaseEntity entity, @NotNull RenderedBone bone, @NotNull ModelBoundingBox boundingBox, @NotNull MountController controller, @NotNull HitBoxListener listener);
+
+    /**
+     * Returns the NMS version of the server.
+     *
+     * @return the version
+     * @since 1.15.2
+     */
+    @NotNull NMSVersion version();
+
+    /**
+     * Adapts a Bukkit entity to a {@link BaseEntity}, handling Folia compatibility.
+     *
+     * @param entity the Bukkit entity
+     * @return the adapted entity
+     * @since 1.15.2
+     */
+    @NotNull BaseEntity adapt(@NotNull PlatformEntity entity);
+
+    /**
+     * Adapts a Bukkit player to a {@link BasePlayer}, handling Folia compatibility.
+     *
+     * @param player the Bukkit player
+     * @return the adapted player
+     * @since 1.15.2
+     */
+    @NotNull BasePlayer adapt(@NotNull PlatformPlayer player);
+
+    /**
+     * Retrieves the model profile (skin) for a player.
+     *
+     * @param player the player
+     * @return the model profile
+     * @since 1.15.2
+     */
+    @NotNull ModelProfile profile(@NotNull PlatformPlayer player);
+
+    /**
+     * Creates a custom skin item stack.
+     *
+     * @param model the model name
+     * @param floats a list of floats
+     * @param flags a list of flags
+     * @param strings a list of strings
+     * @param colors a list of colors
+     * @return the transformed item stack
+     * @since 1.15.2
+     */
+    default @NotNull TransformedItemStack createSkinItem(@NotNull String model, @NotNull List<Float> floats, @NotNull List<Boolean> flags, @NotNull List<String> strings, @NotNull List<Integer> colors) {
+        return TransformedItemStack.empty();
+    }
+
+    /**
+     * Checks if the server is in online mode (either natively or via proxy).
+     *
+     * @return true if online mode, false otherwise
+     * @since 1.15.2
+     */
+    boolean isProxyOnlineMode();
+}

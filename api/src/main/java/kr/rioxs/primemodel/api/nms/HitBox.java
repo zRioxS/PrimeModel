@@ -1,0 +1,200 @@
+package kr.rioxs.primemodel.api.nms;
+
+import kr.rioxs.primemodel.api.PrimeModel;
+import kr.rioxs.primemodel.api.bone.BoneName;
+import kr.rioxs.primemodel.api.bone.RenderedBone;
+import kr.rioxs.primemodel.api.mount.MountController;
+import kr.rioxs.primemodel.api.platform.PlatformEntity;
+import kr.rioxs.primemodel.api.platform.PlatformPlayer;
+import kr.rioxs.primemodel.api.tracker.EntityTrackerRegistry;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
+
+import java.util.Optional;
+import java.util.function.Function;
+
+/**
+ * Represents a hitbox for a model part, allowing for interaction and collision detection.
+ * <p>
+ * Hitboxes are often implemented using invisible entities (like Slimes or Interaction entities)
+ * and are linked to specific bones in the model.
+ * </p>
+ *
+ * @since 1.15.2
+ */
+public interface HitBox extends Identifiable {
+
+    /**
+     * Hides this hitbox from a specific player.
+     *
+     * @param player the target player
+     * @since 1.15.2
+     */
+    @ApiStatus.Internal
+    void hide(@NotNull PlatformPlayer player);
+
+    /**
+     * Shows this hitbox to a specific player.
+     *
+     * @param player the target player
+     * @since 1.15.2
+     */
+    @ApiStatus.Internal
+    void show(@NotNull PlatformPlayer player);
+
+    /**
+     * Returns the name of the bone group associated with this hitbox.
+     *
+     * @return the group name
+     * @since 1.15.2
+     */
+    default @NotNull BoneName groupName() {
+        return positionSource().name();
+    }
+
+    /**
+     * Returns the mount controller for this hitbox.
+     *
+     * @return the mount controller
+     * @since 1.15.2
+     */
+    @NotNull MountController mountController();
+
+    /**
+     * Sets the mount controller for this hitbox.
+     *
+     * @param controller the new mount controller
+     * @since 1.15.2
+     */
+    void mountController(@NotNull MountController controller);
+
+    /**
+     * Checks if the passenger of this hitbox is walking.
+     *
+     * @return true if walking, false otherwise
+     * @since 1.15.2
+     */
+    boolean onWalk();
+
+    /**
+     * Returns the source entity of this hitbox.
+     *
+     * @return the source entity
+     * @since 1.15.2
+     */
+    @NotNull PlatformEntity source();
+
+    /**
+     * Mounts an entity onto this hitbox.
+     *
+     * @param entity the entity to mount
+     * @since 1.15.2
+     */
+    void mount(@NotNull PlatformEntity entity);
+
+    /**
+     * Checks if this hitbox has a mount driver.
+     *
+     * @return true if it has a driver, false otherwise
+     * @since 1.15.2
+     */
+    boolean hasMountDriver();
+
+    /**
+     * Checks if this hitbox is being controlled by another entity.
+     *
+     * @return true if controlled, false otherwise
+     * @since 1.15.2
+     */
+    default boolean hasBeenControlled() {
+        return mountController().canControl() && hasMountDriver();
+    }
+
+    /**
+     * Dismounts an entity from this hitbox.
+     *
+     * @param entity the entity to dismount
+     * @since 1.15.2
+     */
+    void dismount(@NotNull PlatformEntity entity);
+
+    /**
+     * Dismounts all passengers from this hitbox.
+     *
+     * @since 1.15.2
+     */
+    void dismountAll();
+
+    /**
+     * Checks if a dismount operation is forced.
+     *
+     * @return true if forced, false otherwise
+     * @since 1.15.2
+     */
+    boolean forceDismount();
+
+    /**
+     * Returns the relative position of this hitbox to its source entity.
+     *
+     * @return the relative position
+     * @since 1.15.2
+     */
+    @NotNull Vector3f relativePosition();
+
+    /**
+     * Removes this hitbox safely.
+     *
+     * @since 1.15.2
+     */
+    void removeHitBox();
+
+    /**
+     * Returns the listener associated with this hitbox.
+     *
+     * @return the listener
+     * @since 1.15.2
+     */
+    @NotNull HitBoxListener listener();
+
+    /**
+     * Sets the listener for this hitbox.
+     *
+     * @param listener the new listener
+     * @since 3.0.2
+     */
+    @ApiStatus.Internal
+    void listener(@NotNull HitBoxListener listener);
+
+    /**
+     * Updates the listener for this hitbox using a builder function.
+     * <p>
+     * This method retrieves the current listener, converts it to a builder,
+     * applies the provided function, and sets the resulting listener.
+     * </p>
+     *
+     * @param function the function to apply to the builder
+     * @since 3.0.2
+     */
+    default void listener(@NotNull Function<HitBoxListener.Builder, HitBoxListener.Builder> function) {
+        listener(function.apply(listener().toBuilder()).build());
+    }
+
+    /**
+     * Returns the rendered bone that acts as the position source for this hitbox.
+     *
+     * @return the position source bone
+     * @since 1.15.2
+     */
+    @NotNull RenderedBone positionSource();
+
+    /**
+     * Returns the entity tracker registry for this hitbox's source entity.
+     *
+     * @return an optional containing the registry, or empty if not found
+     * @since 1.15.2
+     */
+    default @NotNull Optional<EntityTrackerRegistry> registry() {
+        return PrimeModel.registry(source().uuid());
+    }
+}

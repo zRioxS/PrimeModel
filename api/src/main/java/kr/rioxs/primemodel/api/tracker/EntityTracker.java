@@ -1,0 +1,417 @@
+package kr.rioxs.primemodel.api.tracker;
+import kr.rioxs.primemodel.api.tracker.TrackerUtils.ModelRotation;
+import kr.rioxs.primemodel.api.tracker.TrackerUtils.EntityHideOption;
+import kr.rioxs.primemodel.api.tracker.TrackerUtils.TrackerModifier;
+import kr.rioxs.primemodel.api.bone.Bones.BoneMovement;
+
+import kr.rioxs.primemodel.api.PrimeModel;
+import kr.rioxs.primemodel.api.bone.BoneTags;
+import kr.rioxs.primemodel.api.bone.RenderedBone;
+import kr.rioxs.primemodel.api.data.renderer.RenderPipeline;
+import kr.rioxs.primemodel.api.entity.BaseEntity;
+import kr.rioxs.primemodel.api.entity.BasePlayer;
+import kr.rioxs.primemodel.api.event.RecordEvents.CreateEntityTrackerEvent;
+import kr.rioxs.primemodel.api.event.ClassEvents.DismountModelEvent;
+import kr.rioxs.primemodel.api.event.ClassEvents.MountModelEvent;
+import kr.rioxs.primemodel.api.nms.HitBox;
+import kr.rioxs.primemodel.api.nms.HitBoxListener;
+import kr.rioxs.primemodel.api.platform.PlatformLocation;
+import kr.rioxs.primemodel.api.platform.PlatformPlayer;
+import kr.rioxs.primemodel.api.util.Utils.EventUtil;
+import kr.rioxs.primemodel.api.util.Utils.FunctionUtil;
+import kr.rioxs.primemodel.api.util.Utils.MathUtil;
+import kr.rioxs.primemodel.api.util.Utils.BonePredicate;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+/**
+ * A tracker implementation that is attached to a living entity.
+ * <p>
+ * This tracker synchronizes the model's position, rotation, and animations with the target entity.
+ * It handles hitboxes, nametags, damage tinting, and mounting mechanics.
+ * </p>
+ *
+ * @since 1.15.2
+ */
+public sealed class EntityTracker extends Tracker permits PlayerTracker {
+
+    private static final BonePredicate CREATE_HITBOX_PREDICATE = BonePredicate.name("hitbox")
+        .or(BonePredicate.tag(BoneTags.HITBOX))
+        .or(b -> b.getGroup().getMountController().canMount())
+        .notSet();
+
+    private static final BonePredicate CREATE_NAMETAG_PREDICATE = BonePredicate.tag(BoneTags.TAG, BoneTags.MOB_TAG, BoneTags.PLAYER_TAG).notSet();
+    private static final BonePredicate HITBOX_REFRESH_PREDICATE = BonePredicate.from(r -> r.getHitBox() != null);
+    private static final BonePredicate HEAD_PREDICATE = BonePredicate.tag(BoneTags.HEAD).notSet();
+    private static final BonePredicate HEAD_WITH_CHILDREN_PREDICATE = BonePredicate.tag(BoneTags.HEAD_WITH_CHILDREN).withChildren();
+
+    // Registry
+    private final EntityTrackerRegistry registry;
+
+    // Tint
+    private final AtomicInteger damageTintValue = new AtomicInteger(0xFF8080);
+    private final AtomicLong damageTint = new AtomicLong(-1);
+
+    // Spawn Condition
+    private final Set<UUID> markForSpawn = ConcurrentHashMap.newKeySet();
+    private volatile Predicate<PlatformPlayer> spawnCondition = p -> markForSpawn.isEmpty() || markForSpawn.contains(p.uuid());
+
+    private final EntityBodyRotator bodyRotator;
+    private EntityHideOption hideOption = EntityHideOption.DEFAULT;
+
+    private volatile PlatformLocation location;
+
+    /**
+     * Creates a new entity tracker.
+     *
+     * @param registry the entity tracker registry
+     * @param pipeline the render pipeline
+     * @param modifier the tracker modifier
+     * @param preUpdateConsumer a consumer to run before the first update
+     * @since 1.15.2
+     */
+    @ApiStatus.Internal
+    public EntityTracker(@NotNull EntityTrackerRegistry registry, @NotNull RenderPipeline pipeline, @NotNull TrackerModifier modifier, @NotNull Consumer<EntityTracker> preUpdateConsumer) {
+        super(pipeline, modifier);
+        this.registry = registry;
+        this.location = registry.entity().location();
+        bodyRotator = new EntityBodyRotator(registry);
+
+        var entity = registry.entity();
+        var scale = FunctionUtil.throttleTickFloat(() -> scaler().scale(this));
+        //Shadow
+        Optional.ofNullable(bone("shadow"))
+            .ifPresent(bone -> {
+                var box = bone.getGroup().getHitBox();
+                if (box == null) return;
+                var shadow = PrimeModel.nms().create(entity.location(), d -> {
+                    if (entity instanceof BasePlayer) d.moveDuration(1);
+                });
+                var baseScale = (float) (box.x() + box.z()) / 4F;
+                var posCache = new BoneMovement();
+                tick(((_, s) -> {
+                    var wPos = bone.hitBoxPosition(posCache);
+                    shadow.shadowRadius(scale.getAsFloat() * baseScale);
+                    shadow.syncPotionEffect(entity);
+                    shadow.syncPosition(location().add(wPos.x, wPos.y, wPos.z));
+                    shadow.sendDirtyEntityData(s.getDataBundler());
+                    shadow.sendPosition(entity, s.getTickBundler());
+                }));
+                pipeline.spawnPacketHandler(shadow::spawnWithEntityData);
+                pipeline.showPacketHandler(shadow::spawnWithEntityData);
+                pipeline.despawnPacketHandler(shadow::remove);
+                pipeline.hidePacketHandler(shadow::remove);
+            });
+
+        //Animation
+        pipeline.defaultPosition(vec -> entity.passengerPosition(vec).mul(-1));
+        pipeline.scale(scale);
+        Function<Quaternionf, Quaternionf> headRotator = r -> r.mul(bodyRotator.headRotation());
+
+        pipeline.addGlobalRotModifier(HEAD_PREDICATE, headRotator);
+        pipeline.addGlobalRotModifier(HEAD_WITH_CHILDREN_PREDICATE, headRotator);
+
+        createNametag(CREATE_NAMETAG_PREDICATE, (bone, tag) -> {
+            if (bone.name().tagged(BoneTags.PLAYER_TAG)) {
+                tag.alwaysVisible(true);
+            } else if (bone.name().tagged(BoneTags.MOB_TAG)) {
+                tag.alwaysVisible(false);
+            } else tag.alwaysVisible(entity instanceof BasePlayer);
+            tag.component(entity.customName());
+        });
+        listenHitBox((b, l) -> l
+            .create(h -> registry.hitBoxCache.put(h.uuid(), h))
+            .remove(h -> registry.hitBoxCache.remove(h.uuid()))
+            .mount((h, e) -> {
+                registry.mountedHitBoxCache.put(e.uuid(), new EntityTrackerRegistry.MountedHitBox(e, h));
+                EventUtil.call(MountModelEvent.class, () -> new MountModelEvent(this, b, h, e));
+            })
+            .dismount((h, e) -> {
+                registry.mountedHitBoxCache.remove(e.uuid());
+                EventUtil.call(DismountModelEvent.class, () -> new DismountModelEvent(this, b, h, e));
+            }));
+        entity.platform().task(() -> {
+            if (isClosed()) return;
+            createHitBox(null, CREATE_HITBOX_PREDICATE);
+        });
+        tick((_, _) -> updateLocation());
+        tick((_, _) -> {
+            if (damageTint.getAndDecrement() == 0) update(TrackerUpdateAction.previousTint());
+        });
+        rotation(bodyRotator::bodyRotation);
+        preUpdateConsumer.accept(this);
+        EventUtil.call(CreateEntityTrackerEvent.class, () -> new CreateEntityTrackerEvent(this));
+    }
+
+    @Override
+    public @NotNull ModelRotation rotation() {
+        return sourceEntity().dead() ? pipeline.getRotation() : super.rotation();
+    }
+
+    /**
+     * Synchronizes the tracker with the base entity's data asynchronously.
+     *
+     * @since 1.15.2
+     */
+    public void updateBaseEntity() {
+        if (sourceEntity().dead() || isClosed()) return;
+        PrimeModel.platform().scheduler().asyncTaskLater(1, () -> {
+            var entity = sourceEntity();
+            pipeline.forEach(bone -> bone.applyAtDisplay(BonePredicate.TRUE, display -> display.syncPotionEffect(entity)));
+            updateLocation();
+            forceUpdate(true);
+        });
+    }
+
+    private void updateLocation() {
+        var loc = sourceEntity().location();
+        if (this.location.distanceSquared(loc) < MathUtil.VECTOR_COMPARISON_EPSILON_SQ) return;
+        synchronized (this) {
+            this.location = loc;
+        }
+        pipeline.forEach(bone -> bone.applyAtDisplay(BonePredicate.TRUE, display -> display.syncPosition(loc)));
+    }
+
+    /**
+     * Returns the entity tracker registry associated with this tracker.
+     *
+     * @return the registry
+     * @since 1.15.2
+     */
+    public @NotNull EntityTrackerRegistry registry() {
+        return registry;
+    }
+
+    /**
+     * Creates hitboxes for the entity based on a predicate.
+     *
+     * @param listener the hitbox listener
+     * @param predicate the bone predicate
+     * @return true if any hitboxes were created
+     * @since 1.15.2
+     */
+    public boolean createHitBox(@Nullable HitBoxListener listener, @NotNull BonePredicate predicate) {
+        return createHitBox(registry.entity(), listener, predicate);
+    }
+
+    /**
+     * Retrieves or creates a hitbox for the entity.
+     *
+     * @param listener the hitbox listener
+     * @param predicate the bone predicate
+     * @return the hitbox, or null if not found/created
+     * @since 1.15.2
+     */
+    public @Nullable HitBox hitbox(@Nullable HitBoxListener listener, @NotNull Predicate<RenderedBone> predicate) {
+        return hitbox(registry.entity(), listener, predicate);
+    }
+
+    /**
+     * Returns the current damage tint color value.
+     *
+     * @return the hex color value
+     * @since 1.15.2
+     */
+    public int damageTintValue() {
+        return damageTintValue.get();
+    }
+
+    /**
+     * Sets the damage tint color value.
+     *
+     * @param tint the hex color value
+     * @since 1.15.2
+     */
+    public void damageTintValue(int tint) {
+        damageTintValue.set(tint);
+    }
+
+    /**
+     * Triggers the damage tint effect if enabled.
+     *
+     * @since 1.15.2
+     */
+    public void damageTint() {
+        if (!modifier().damageTint()) return;
+        var get = damageTint.get();
+        if (get < 0 && damageTint.compareAndSet(get, 10)) task(() -> update(TrackerUpdateAction.tint(damageTintValue())));
+    }
+
+    @Override
+    public void despawn() {
+        if (sourceEntity().dead()) {
+            close(CloseReason.DESPAWN);
+            return;
+        }
+        super.despawn();
+    }
+
+    @Override
+    public @NotNull PlatformLocation location() {
+        return location;
+    }
+
+    /**
+     * Returns the source entity being tracked.
+     *
+     * @return the source entity
+     * @since 1.15.2
+     */
+    public @NotNull BaseEntity sourceEntity() {
+        return registry.entity();
+    }
+
+    /**
+     * Cancels the active damage tint effect.
+     *
+     * @since 1.15.2
+     */
+    public void cancelDamageTint() {
+        damageTint.set(-1);
+    }
+
+    /**
+     * Refreshes the tracker, updating entity data and hitboxes.
+     *
+     * @since 1.15.2
+     */
+    @ApiStatus.Internal
+    public void refresh() {
+        updateLocation();
+        registry.entity().platform().task(() -> createHitBox(null, HITBOX_REFRESH_PREDICATE));
+    }
+
+    /**
+     * Marks a player for spawning the model.
+     *
+     * @param player the player
+     * @return true if the player was added
+     * @since 1.15.2
+     */
+    public boolean markPlayerForSpawn(@NotNull PlatformPlayer player) {
+        return markForSpawn.add(player.uuid());
+    }
+
+    /**
+     * Marks a set of players for spawning the model.
+     *
+     * @param uuids the set of player UUIDs
+     * @return true if any players were added
+     * @since 1.15.2
+     */
+    public boolean markPlayerForSpawn(@NotNull Set<UUID> uuids) {
+        return markForSpawn.addAll(uuids);
+    }
+
+    /**
+     * Unmarks a player for spawning the model.
+     *
+     * @param player the player
+     * @return true if the player was removed
+     * @since 1.15.2
+     */
+    public boolean unmarkPlayerForSpawn(@NotNull PlatformPlayer player) {
+        return markForSpawn.remove(player.uuid());
+    }
+
+    /**
+     * Converts the current tracker state to a {@link TrackerData} object.
+     *
+     * @return the tracker data
+     * @since 1.15.2
+     */
+    public @NotNull TrackerData asTrackerData() {
+        return new TrackerData(
+            name(),
+            scaler,
+            rotator,
+            modifier,
+            bodyRotator.createData(),
+            hideOption,
+            markForSpawn
+        );
+    }
+
+    /**
+     * Returns the entity body rotator.
+     *
+     * @return the body rotator
+     * @since 1.15.2
+     */
+    public @NotNull EntityBodyRotator bodyRotator() {
+        return bodyRotator;
+    }
+
+    /**
+     * Checks if the model can be spawned for a specific player.
+     *
+     * @param player the player
+     * @return true if allowed
+     * @since 1.15.2
+     */
+    public boolean canBeSpawnedAt(@NotNull PlatformPlayer player) {
+        return spawnCondition.test(player);
+    }
+
+    /**
+     * Returns the hide option for this tracker.
+     *
+     * @return the hide option
+     * @since 1.15.2
+     */
+    public @NotNull EntityHideOption hideOption() {
+        return hideOption;
+    }
+
+    /**
+     * Sets the hide option for this tracker.
+     *
+     * @param hideOption the new hide option
+     * @since 1.15.2
+     */
+    public void hideOption(@NotNull EntityHideOption hideOption) {
+        this.hideOption = Objects.requireNonNull(hideOption);
+    }
+
+    /**
+     * Checks if this tracker's data can be saved.
+     *
+     * @return true if saveable
+     * @since 1.15.2
+     */
+    public boolean canBeSaved() {
+        return renderer().type().isCanBeSaved();
+    }
+
+    /**
+     * Appends an additional spawn condition for this tracker.
+     * <p>
+     * The specified predicate is combined with the existing spawn condition using a logical AND.
+     * Only players who satisfy all chained conditions will be eligible to receive spawn packets for this model.
+     * </p>
+     *
+     * <pre>{@code
+     * tracker.spawnCondition(player -> player.hasPermission("custom.model.view"));
+     * }</pre>
+     *
+     * @param condition the spawn condition predicate to combine
+     * @throws NullPointerException if condition is null
+     * @since 3.5.0
+     */
+    public synchronized void spawnCondition(@NotNull Predicate<PlatformPlayer> condition) {
+       this.spawnCondition = this.spawnCondition.and(Objects.requireNonNull(condition));
+    }
+}
