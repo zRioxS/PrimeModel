@@ -17,7 +17,7 @@ import kr.rioxs.primemodel.api.manager.Managers.ProfileManager
 import kr.rioxs.primemodel.api.manager.Managers.ScriptManager
 import kr.rioxs.primemodel.api.manager.Managers.SkinManager
 import kr.rioxs.primemodel.api.mount.MountController
-import kr.rioxs.primemodel.api.mount.MountControllers
+import kr.rioxs.primemodel.api.mount.MountController.MountControllers
 import kr.rioxs.primemodel.api.pack.PackZipper
 import kr.rioxs.primemodel.api.platform.PlatformItemStack
 import kr.rioxs.primemodel.api.PrimeModelConfig
@@ -141,10 +141,10 @@ class PrimeModelConfigImpl(yaml: ConfigurationSection) : PrimeModelConfig {
     private val usePurpurAfk = yaml.getBoolean("use-purpur-afk", true)
     private val versionCheck = yaml.getBoolean("version-check", true)
     private val defaultMountController = when (yaml.getString("default-mount-controller")?.lowercase()) {
-        "invalid" -> MountControllers.INVALID
-        "none" -> MountControllers.NONE
-        "fly" -> MountControllers.FLY
-        else -> MountControllers.WALK
+        "invalid" -> MountController.MountControllers.INVALID
+        "none" -> MountController.MountControllers.NONE
+        "fly" -> MountController.MountControllers.FLY
+        else -> MountController.MountControllers.WALK
     }
     private val lerpFrameTime = yaml.getInt("lerp-frame-time", 5)
     private val cancelPlayerModelInventory = yaml.getBoolean("cancel-player-model-inventory")

@@ -161,7 +161,7 @@ public interface PrimeModelConfig {
      * Returns the default mount controller used for entities.
      *
      * @return the default mount controller
-     * @see kr.rioxs.primemodel.api.mount.MountControllers
+     * @see kr.rioxs.primemodel.api.mount.MountController.MountControllers
      * @since 1.15.2
      */
     @NotNull MountController defaultMountController();

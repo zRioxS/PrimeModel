@@ -8,7 +8,6 @@ import kr.rioxs.primemodel.api.bone.*;
 import kr.rioxs.primemodel.api.data.blueprint.Blueprints.BlueprintElement;
 import kr.rioxs.primemodel.api.data.blueprint.Blueprints.ModelBoundingBox;
 import kr.rioxs.primemodel.api.mount.MountController;
-import kr.rioxs.primemodel.api.mount.MountControllers;
 import kr.rioxs.primemodel.api.platform.PlatformItemStack;
 import kr.rioxs.primemodel.api.util.Utils.MathUtil;
 import kr.rioxs.primemodel.api.util.Utils.TransformedItemStack;
@@ -81,8 +80,8 @@ public final class RendererGroup {
         if (name().tagged(BoneTags.SEAT)) {
             mountController = PrimeModel.config().defaultMountController();
         } else if (name().tagged(BoneTags.SUB_SEAT)) {
-            mountController = MountControllers.NONE;
-        } else mountController = MountControllers.INVALID;
+            mountController = MountController.MountControllers.NONE;
+        } else mountController = MountController.MountControllers.INVALID;
     }
 
     public @NotNull Stream<RendererGroup> flatten() {
