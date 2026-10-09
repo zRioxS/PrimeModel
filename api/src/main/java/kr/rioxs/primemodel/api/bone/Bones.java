@@ -1,6 +1,6 @@
 package kr.rioxs.primemodel.api.bone;
 import kr.rioxs.primemodel.api.entity.BaseEntity;
-import kr.rioxs.primemodel.api.platform.PlatformItemTransform;
+import kr.rioxs.primemodel.api.platform.PlatformEnums.PlatformItemTransform;
 import kr.rioxs.primemodel.api.platform.PlatformPlayer;
 import kr.rioxs.primemodel.api.util.Utils.TransformedItemStack;
 import kr.rioxs.primemodel.api.util.Utils.InterpolationUtil;

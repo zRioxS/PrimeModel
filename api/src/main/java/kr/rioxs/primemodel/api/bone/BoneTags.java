@@ -127,7 +127,7 @@ import java.util.Objects;
 import org.jetbrains.annotations.ApiStatus;
 import java.util.Set;
 import org.jetbrains.annotations.ApiStatus;
-import kr.rioxs.primemodel.api.platform.PlatformItemTransform;
+import kr.rioxs.primemodel.api.platform.PlatformEnums.PlatformItemTransform;
 import org.jetbrains.annotations.ApiStatus;
 import java.util.Set;
 import org.jetbrains.annotations.ApiStatus;

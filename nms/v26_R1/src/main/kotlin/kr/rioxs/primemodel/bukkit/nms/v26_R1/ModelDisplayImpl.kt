@@ -5,9 +5,9 @@ import kr.rioxs.primemodel.api.nms.NMSTypes.AnimationBundler
 import kr.rioxs.primemodel.api.nms.NMSTypes.DisplayTransformer
 import kr.rioxs.primemodel.api.nms.ModelDisplay
 import kr.rioxs.primemodel.api.nms.PacketBundler
-import kr.rioxs.primemodel.api.platform.PlatformBillboard
+import kr.rioxs.primemodel.api.platform.PlatformEnums.PlatformBillboard
 import kr.rioxs.primemodel.api.platform.PlatformItemStack
-import kr.rioxs.primemodel.api.platform.PlatformItemTransform
+import kr.rioxs.primemodel.api.platform.PlatformEnums.PlatformItemTransform
 import kr.rioxs.primemodel.api.platform.PlatformLocation
 import kr.rioxs.primemodel.api.tracker.TrackerUtils.ModelRotation
 import kr.rioxs.primemodel.api.util.Utils.Locks.SingleLock

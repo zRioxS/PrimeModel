@@ -1,7 +1,7 @@
 package kr.rioxs.primemodel.api.tracker;
 
 import kr.rioxs.primemodel.api.bone.RenderedBone;
-import kr.rioxs.primemodel.api.platform.PlatformBillboard;
+import kr.rioxs.primemodel.api.platform.PlatformEnums.PlatformBillboard;
 import kr.rioxs.primemodel.api.util.Utils.TransformedItemStack;
 import kr.rioxs.primemodel.api.util.Utils.BonePredicate;
 import lombok.RequiredArgsConstructor;

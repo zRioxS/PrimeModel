@@ -1,9 +1,9 @@
 package kr.rioxs.primemodel.api.nms;
 
 import kr.rioxs.primemodel.api.entity.BaseEntity;
-import kr.rioxs.primemodel.api.platform.PlatformBillboard;
+import kr.rioxs.primemodel.api.platform.PlatformEnums.PlatformBillboard;
 import kr.rioxs.primemodel.api.platform.PlatformItemStack;
-import kr.rioxs.primemodel.api.platform.PlatformItemTransform;
+import kr.rioxs.primemodel.api.platform.PlatformEnums.PlatformItemTransform;
 import kr.rioxs.primemodel.api.platform.PlatformLocation;
 import kr.rioxs.primemodel.api.tracker.TrackerUtils.ModelRotation;
 import org.jetbrains.annotations.NotNull;
