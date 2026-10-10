@@ -13,7 +13,7 @@ import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 import kr.rioxs.primemodel.api.PrimeModel;
 import kr.rioxs.primemodel.api.config.Configs.DebugConfig;
 import kr.rioxs.primemodel.api.entity.BaseEntity;
-import kr.rioxs.primemodel.api.entity.BasePlayer;
+import kr.rioxs.primemodel.api.entity.BaseEntity.Player;
 import kr.rioxs.primemodel.api.manager.Managers.PlayerManager;
 import kr.rioxs.primemodel.api.nms.HitBox;
 import kr.rioxs.primemodel.api.nms.ModelDisplay;
@@ -363,7 +363,7 @@ public final class EntityTrackerRegistry {
         REGISTRY_LOCK.accessToWriteLock(() -> {
             UUID_REGISTRY_MAP.remove(uuid);
             ID_REGISTRY_MAP.remove(id);
-            if (entity instanceof BasePlayer player) player.updateInventory();
+            if (entity instanceof BaseEntity.Player player) player.updateInventory();
             return null;
         });
         LogUtil.debug(DebugConfig.DebugOption.TRACKER, () -> uuid + "'s tracker registry has been removed. (" + UUID_REGISTRY_MAP.size() + ")");

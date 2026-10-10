@@ -4,7 +4,7 @@ import kr.rioxs.primemodel.api.bukkit.platform.BukkitPlatform.BukkitAdapter;
 import kr.rioxs.primemodel.api.bukkit.platform.BukkitPlatform.BukkitEntity;
 import kr.rioxs.primemodel.api.bukkit.platform.BukkitPlatform.BukkitPlayer;
 import kr.rioxs.primemodel.api.entity.BaseEntity;
-import kr.rioxs.primemodel.api.entity.BasePlayer;
+import kr.rioxs.primemodel.api.entity.BaseEntity.Player;
 import kr.rioxs.primemodel.api.util.Utils.TransformedItemStack;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
@@ -101,13 +101,13 @@ public interface BaseBukkitEntity extends BaseEntity, PersistentDataHolder {
     /**
      * Represents a Bukkit-specific player adapter.
      * <p>
-     * This interface extends {@link BaseBukkitEntity} and {@link BasePlayer} to provide
+     * This interface extends {@link BaseBukkitEntity} and {@link BaseEntity.Player} to provide
      * access to the underlying Bukkit player.
      * </p>
      *
      * @since 2.0.0
      */
-    interface Player extends BaseBukkitEntity, BasePlayer {
+    interface Player extends BaseBukkitEntity, BaseEntity.Player {
 
         /**
          * Returns the underlying Bukkit player.

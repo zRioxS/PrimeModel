@@ -9,7 +9,7 @@ import kr.rioxs.primemodel.api.bone.BoneTags;
 import kr.rioxs.primemodel.api.bone.RenderedBone;
 import kr.rioxs.primemodel.api.data.renderer.RenderPipeline;
 import kr.rioxs.primemodel.api.entity.BaseEntity;
-import kr.rioxs.primemodel.api.entity.BasePlayer;
+import kr.rioxs.primemodel.api.entity.BaseEntity.Player;
 import kr.rioxs.primemodel.api.event.EventInterfaces.CreateEntityTrackerEvent;
 import kr.rioxs.primemodel.api.event.EventInterfaces.DismountModelEvent;
 import kr.rioxs.primemodel.api.event.EventInterfaces.MountModelEvent;
@@ -98,7 +98,7 @@ public sealed class EntityTracker extends Tracker permits Tracker.PlayerTracker 
                 var box = bone.getGroup().getHitBox();
                 if (box == null) return;
                 var shadow = PrimeModel.nms().create(entity.location(), d -> {
-                    if (entity instanceof BasePlayer) d.moveDuration(1);
+                    if (entity instanceof BaseEntity.Player) d.moveDuration(1);
                 });
                 var baseScale = (float) (box.x() + box.z()) / 4F;
                 var posCache = new BoneMovement();
@@ -129,7 +129,7 @@ public sealed class EntityTracker extends Tracker permits Tracker.PlayerTracker 
                 tag.alwaysVisible(true);
             } else if (bone.name().tagged(BoneTags.MOB_TAG)) {
                 tag.alwaysVisible(false);
-            } else tag.alwaysVisible(entity instanceof BasePlayer);
+            } else tag.alwaysVisible(entity instanceof BaseEntity.Player);
             tag.component(entity.customName());
         });
         listenHitBox((b, l) -> l

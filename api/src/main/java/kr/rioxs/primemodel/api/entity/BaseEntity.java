@@ -16,6 +16,7 @@ import org.joml.Vector3f;
 
 import java.util.Optional;
 import java.util.stream.Stream;
+import kr.rioxs.primemodel.api.nms.NMSTypes.Profiled;
 
 /**
  * An adapter of entity
@@ -208,4 +209,18 @@ public interface BaseEntity extends Identifiable {
      * @param modelData model data
      */
     void modelData(@Nullable String modelData);
+
+    /**
+     * An adapter of player.
+     */
+    public interface Player extends BaseEntity, Profiled {
+
+        /**
+         * Updates current inventory
+         */
+        void updateInventory();
+
+        @Override
+        @NotNull PlatformPlayer platform();
+    }
 }

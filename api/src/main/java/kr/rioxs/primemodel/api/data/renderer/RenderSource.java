@@ -7,7 +7,7 @@ import kr.rioxs.primemodel.api.bone.Bones.BoneRenderContext;
 import kr.rioxs.primemodel.api.PrimeModel;
 import kr.rioxs.primemodel.api.armor.PlayerArmor;
 import kr.rioxs.primemodel.api.entity.BaseEntity;
-import kr.rioxs.primemodel.api.entity.BasePlayer;
+import kr.rioxs.primemodel.api.entity.BaseEntity.Player;
 import kr.rioxs.primemodel.api.manager.Managers.SkinManager;
 import kr.rioxs.primemodel.api.nms.NMSTypes.Profiled;
 import kr.rioxs.primemodel.api.platform.PlatformLocation;
@@ -68,7 +68,7 @@ public sealed interface RenderSource<T extends Tracker> {
      */
     @ApiStatus.Internal
     static @NotNull RenderSource.Entity of(@NotNull BaseEntity entity, @NotNull ModelProfile.Uncompleted profile) {
-        return entity instanceof BasePlayer player ? new ProfiledPlayer(player, profile) : new ProfiledEntity(entity, profile);
+        return entity instanceof BaseEntity.Player player ? new ProfiledPlayer(player, profile) : new ProfiledEntity(entity, profile);
     }
 
     /**
@@ -80,7 +80,7 @@ public sealed interface RenderSource<T extends Tracker> {
      */
     @ApiStatus.Internal
     static @NotNull RenderSource.Entity of(@NotNull BaseEntity entity) {
-        return entity instanceof BasePlayer player ? new DelegatedPlayer(player) : new DelegatedEntity(entity);
+        return entity instanceof BaseEntity.Player player ? new DelegatedPlayer(player) : new DelegatedEntity(entity);
     }
 
     /**
@@ -173,7 +173,7 @@ public sealed interface RenderSource<T extends Tracker> {
      */
     sealed interface Player extends Entity, Profiled {
         @Override
-        @NotNull BasePlayer entity();
+        @NotNull BaseEntity.Player entity();
 
         @NotNull
         @Override
@@ -274,12 +274,12 @@ public sealed interface RenderSource<T extends Tracker> {
     }
 
     /**
-     * A basic implementation of {@link Entity} wrapping a {@link BasePlayer}.
+     * A basic implementation of {@link Entity} wrapping a {@link BaseEntity.Player}.
      *
      * @param entity the player entity
      * @since 1.15.2
      */
-    record DelegatedPlayer(@NotNull BasePlayer entity) implements Player {
+    record DelegatedPlayer(@NotNull BaseEntity.Player entity) implements Player {
 
         @Override
         public @NotNull CompletableFuture<BoneRenderContext> completeContext() {
@@ -288,13 +288,13 @@ public sealed interface RenderSource<T extends Tracker> {
     }
 
     /**
-     * A profiled implementation of {@link Entity} wrapping a {@link BasePlayer} and a model profile.
+     * A profiled implementation of {@link Entity} wrapping a {@link BaseEntity.Player} and a model profile.
      *
      * @param entity the player entity
      * @param externalProfile the external model profile
      * @since 1.15.2
      */
-    record ProfiledPlayer(@NotNull BasePlayer entity, @NotNull ModelProfile.Uncompleted externalProfile) implements Player {
+    record ProfiledPlayer(@NotNull BaseEntity.Player entity, @NotNull ModelProfile.Uncompleted externalProfile) implements Player {
 
         @Override
         public @NotNull CompletableFuture<BoneRenderContext> completeContext() {

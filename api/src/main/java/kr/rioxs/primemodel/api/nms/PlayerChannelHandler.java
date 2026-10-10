@@ -1,11 +1,12 @@
 package kr.rioxs.primemodel.api.nms;
 
-import kr.rioxs.primemodel.api.entity.BasePlayer;
+import kr.rioxs.primemodel.api.entity.BaseEntity.Player;
 import kr.rioxs.primemodel.api.platform.PlatformPlayer;
 import kr.rioxs.primemodel.api.tracker.EntityTrackerRegistry;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
+import kr.rioxs.primemodel.api.entity.BaseEntity;
 
 /**
  * Manages the network channel for a player, allowing for packet interception and injection.
@@ -43,7 +44,7 @@ public interface PlayerChannelHandler extends NMSTypes.Identifiable, AutoCloseab
      * @return the base player
      * @since 1.15.2
      */
-    @NotNull BasePlayer base();
+    @NotNull BaseEntity.Player base();
 
     /**
      * Sends the correct entity data for a specific tracker to the player.

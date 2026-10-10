@@ -4,7 +4,7 @@ import kr.rioxs.primemodel.api.PrimeModel;
 import kr.rioxs.primemodel.api.bone.RenderedBone;
 import kr.rioxs.primemodel.api.data.blueprint.Blueprints.ModelBoundingBox;
 import kr.rioxs.primemodel.api.entity.BaseEntity;
-import kr.rioxs.primemodel.api.entity.BasePlayer;
+import kr.rioxs.primemodel.api.entity.BaseEntity.Player;
 import kr.rioxs.primemodel.api.mount.MountController;
 import kr.rioxs.primemodel.api.platform.PlatformEntity;
 import kr.rioxs.primemodel.api.platform.PlatformItemStack;
@@ -164,7 +164,7 @@ public interface NMS {
      * @since 1.15.2
      */
     default void hide(@NotNull PlayerChannelHandler channel, @NotNull EntityTrackerRegistry registry, @NotNull BooleanSupplier condition) {
-        if (registry.entity() instanceof BasePlayer) {
+        if (registry.entity() instanceof BaseEntity.Player) {
             var plugin = PrimeModel.platform();
             plugin.scheduler().asyncTaskLater(plugin.config().playerHideDelay(), () -> {
                 if (condition.getAsBoolean()) hide(channel, registry);
@@ -203,13 +203,13 @@ public interface NMS {
     @NotNull BaseEntity adapt(@NotNull PlatformEntity entity);
 
     /**
-     * Adapts a Bukkit player to a {@link BasePlayer}, handling Folia compatibility.
+     * Adapts a Bukkit player to a {@link BaseEntity.Player}, handling Folia compatibility.
      *
      * @param player the Bukkit player
      * @return the adapted player
      * @since 1.15.2
      */
-    @NotNull BasePlayer adapt(@NotNull PlatformPlayer player);
+    @NotNull BaseEntity.Player adapt(@NotNull PlatformPlayer player);
 
     /**
      * Retrieves the model profile (skin) for a player.
