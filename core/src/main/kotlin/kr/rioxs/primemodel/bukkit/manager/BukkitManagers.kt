@@ -22,7 +22,7 @@ import kr.rioxs.primemodel.api.tracker.Tracker
 import kr.rioxs.primemodel.api.tracker.Tracker.TrackerAnimations
 import kr.rioxs.primemodel.bukkit.compatibility.citizens.CitizensCompatibility
 import kr.rioxs.primemodel.bukkit.compatibility.NexoCompatibility
-import kr.rioxs.primemodel.bukkit.compatibility.skinsrestorer.SkinsRestorerCompatibility
+import kr.rioxs.primemodel.bukkit.compatibility.SkinsRestorerCompatibility
 import kr.rioxs.primemodel.bukkit.util.PLUGIN
 import kr.rioxs.primemodel.bukkit.util.registerListener
 import kr.rioxs.primemodel.bukkit.util.wrap

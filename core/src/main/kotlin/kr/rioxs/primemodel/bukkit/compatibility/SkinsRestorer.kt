@@ -1,8 +1,7 @@
-package kr.rioxs.primemodel.bukkit.compatibility.skinsrestorer
+package kr.rioxs.primemodel.bukkit.compatibility
 import kr.rioxs.primemodel.api.PrimeModel
 import kr.rioxs.primemodel.api.manager.Managers.Manager
 
-import kr.rioxs.primemodel.bukkit.compatibility.Compatibility
 
 import kr.rioxs.primemodel.api.profile.Profiles.ModelProfile
 import kr.rioxs.primemodel.api.profile.Profiles.ModelProfileInfo
