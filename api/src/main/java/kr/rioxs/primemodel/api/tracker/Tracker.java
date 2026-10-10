@@ -132,8 +132,8 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
         }
     );
     private volatile ScheduledFuture<?> task;
-    protected ModelRotator rotator = ModelRotator.YAW;
-    protected ModelScaler scaler = ModelScaler.entity();
+    protected ModelTransform.ModelRotator rotator = ModelTransform.ModelRotator.YAW;
+    protected ModelTransform.ModelScaler scaler = ModelTransform.ModelScaler.entity();
     private Supplier<ModelRotation> rotationSupplier = () -> ModelRotation.EMPTY;
     private BiConsumer<Tracker, CloseReason> closeEventHandler = (t, r) -> EventUtil.call(CloseTrackerEvent.class, () -> new CloseTrackerEvent(t, r));
 
@@ -265,7 +265,7 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
      * @param rotator the rotator strategy
      * @since 1.15.2
      */
-    public final void rotator(@NotNull ModelRotator rotator) {
+    public final void rotator(@NotNull ModelTransform.ModelRotator rotator) {
         this.rotator = Objects.requireNonNull(rotator);
     }
 
@@ -275,7 +275,7 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
      * @return the scaler
      * @since 1.15.2
      */
-    public @NotNull ModelScaler scaler() {
+    public @NotNull ModelTransform.ModelScaler scaler() {
         return scaler;
     }
 
@@ -285,7 +285,7 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
      * @param scaler the new scaler
      * @since 1.15.2
      */
-    public void scaler(@NotNull ModelScaler scaler) {
+    public void scaler(@NotNull ModelTransform.ModelScaler scaler) {
         this.scaler = Objects.requireNonNull(scaler);
     }
 
@@ -1134,10 +1134,10 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
 
     public static record TrackerData(
         @NotNull String id,
-        @Nullable ModelScaler scaler,
-        @Nullable ModelRotator rotator,
+        @Nullable ModelTransform.ModelScaler scaler,
+        @Nullable ModelTransform.ModelRotator rotator,
         @NotNull TrackerModifier modifier,
-        @Nullable @SerializedName("body-rotator") EntityBodyRotator.RotatorData bodyRotator,
+        @Nullable @SerializedName("body-rotator") ModelTransform.EntityBodyRotator.RotatorData bodyRotator,
         @Nullable @SerializedName("hide-option") EntityHideOption hideOption,
         @Nullable @SerializedName("mark-for-spawn") Set<UUID> markForSpawn
     ) {
@@ -1146,10 +1146,10 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
          * @since 1.15.2
          */
         public static final Gson PARSER = new GsonBuilder()
-            .registerTypeAdapter(ModelScaler.class, (JsonDeserializer<ModelScaler>) (json, _, _) -> json.isJsonObject() ? ModelScaler.deserialize(json.getAsJsonObject()) : ModelScaler.defaultScaler())
-            .registerTypeAdapter(ModelScaler.class, (JsonSerializer<ModelScaler>) (src, _, _) -> src.serialize())
-            .registerTypeAdapter(ModelRotator.class, (JsonDeserializer<ModelRotator>) (json, _, _) -> json.isJsonObject() ? ModelRotator.deserialize(json.getAsJsonObject()) : ModelRotator.YAW)
-            .registerTypeAdapter(ModelRotator.class, (JsonSerializer<ModelRotator>) (src, _, _) -> src.serialize())
+            .registerTypeAdapter(ModelTransform.ModelScaler.class, (JsonDeserializer<ModelTransform.ModelScaler>) (json, _, _) -> json.isJsonObject() ? ModelTransform.ModelScaler.deserialize(json.getAsJsonObject()) : ModelTransform.ModelScaler.defaultScaler())
+            .registerTypeAdapter(ModelTransform.ModelScaler.class, (JsonSerializer<ModelTransform.ModelScaler>) (src, _, _) -> src.serialize())
+            .registerTypeAdapter(ModelTransform.ModelRotator.class, (JsonDeserializer<ModelTransform.ModelRotator>) (json, _, _) -> json.isJsonObject() ? ModelTransform.ModelRotator.deserialize(json.getAsJsonObject()) : ModelTransform.ModelRotator.YAW)
+            .registerTypeAdapter(ModelTransform.ModelRotator.class, (JsonSerializer<ModelTransform.ModelRotator>) (src, _, _) -> src.serialize())
             .registerTypeAdapter(EntityHideOption.class, (JsonDeserializer<EntityHideOption>) (json, _, _) -> json.isJsonArray() ? EntityHideOption.deserialize(json.getAsJsonArray()) : EntityHideOption.DEFAULT)
             .registerTypeAdapter(EntityHideOption.class, (JsonSerializer<EntityHideOption>) (src, _, _) -> src.serialize())
             .registerTypeAdapter(UUID.class, (JsonDeserializer<UUID>) (json, _, _) -> UUID.fromString(json.getAsString()))
@@ -1190,10 +1190,10 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
         public static @NotNull TrackerData deserialize(@NotNull JsonElement element) {
             return element.isJsonPrimitive() ? new TrackerData(
                 element.getAsString(),
-                ModelScaler.entity(),
+                ModelTransform.ModelScaler.entity(),
                 null,
                 TrackerModifier.DEFAULT,
-                EntityBodyRotator.defaultData(),
+                ModelTransform.EntityBodyRotator.defaultData(),
                 null,
                 null
             ) : PARSER.fromJson(element, TrackerData.class);
@@ -1206,8 +1206,8 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
          * @since 1.15.2
          */
         @Override
-        public @NotNull ModelScaler scaler() {
-            return scaler != null ? scaler : ModelScaler.entity();
+        public @NotNull ModelTransform.ModelScaler scaler() {
+            return scaler != null ? scaler : ModelTransform.ModelScaler.entity();
         }
     
         /**
@@ -1217,8 +1217,8 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
          * @since 1.15.2
          */
         @Override
-        public @NotNull ModelRotator rotator() {
-            return rotator != null ? rotator : ModelRotator.YAW;
+        public @NotNull ModelTransform.ModelRotator rotator() {
+            return rotator != null ? rotator : ModelTransform.ModelRotator.YAW;
         }
     
         /**
@@ -1250,8 +1250,8 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
          * @since 1.15.2
          */
         @Override
-        public @NotNull EntityBodyRotator.RotatorData bodyRotator() {
-            return bodyRotator != null ? bodyRotator : EntityBodyRotator.defaultData();
+        public @NotNull ModelTransform.EntityBodyRotator.RotatorData bodyRotator() {
+            return bodyRotator != null ? bodyRotator : ModelTransform.EntityBodyRotator.defaultData();
         }
     
         /**

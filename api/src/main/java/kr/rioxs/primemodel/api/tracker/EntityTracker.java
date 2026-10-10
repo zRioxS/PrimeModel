@@ -69,7 +69,7 @@ public sealed class EntityTracker extends Tracker permits Tracker.PlayerTracker 
     private final Set<UUID> markForSpawn = ConcurrentHashMap.newKeySet();
     private volatile Predicate<PlatformPlayer> spawnCondition = p -> markForSpawn.isEmpty() || markForSpawn.contains(p.uuid());
 
-    private final EntityBodyRotator bodyRotator;
+    private final ModelTransform.EntityBodyRotator bodyRotator;
     private EntityHideOption hideOption = EntityHideOption.DEFAULT;
 
     private volatile PlatformLocation location;
@@ -88,7 +88,7 @@ public sealed class EntityTracker extends Tracker permits Tracker.PlayerTracker 
         super(pipeline, modifier);
         this.registry = registry;
         this.location = registry.entity().location();
-        bodyRotator = new EntityBodyRotator(registry);
+        bodyRotator = new ModelTransform.EntityBodyRotator(registry);
 
         var entity = registry.entity();
         var scale = FunctionUtil.throttleTickFloat(() -> scaler().scale(this));
@@ -351,7 +351,7 @@ public sealed class EntityTracker extends Tracker permits Tracker.PlayerTracker 
      * @return the body rotator
      * @since 1.15.2
      */
-    public @NotNull EntityBodyRotator bodyRotator() {
+    public @NotNull ModelTransform.EntityBodyRotator bodyRotator() {
         return bodyRotator;
     }
 
