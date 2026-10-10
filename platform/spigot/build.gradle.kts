@@ -1,4 +1,4 @@
-import xyz.jpenilla.resourcefactory.bukkit.Permission
+﻿import xyz.jpenilla.resourcefactory.bukkit.Permission
 
 plugins {
     alias(libs.plugins.convention.plugin)
@@ -13,7 +13,7 @@ dependencies {
 //     shade(project(":nms:v1_21_R3", configuration = "reobf")) { isTransitive = false }
 //     shade(project(":nms:v1_21_R4", configuration = "reobf")) { isTransitive = false }
 //     shade(project(":nms:v1_21_R5", configuration = "reobf")) { isTransitive = false }
-//     shade(project(":nms:v1_21_R6", configuration = "reobf")) { isTransitive = false }
+    shade(project(":nms:v1_21_R6", configuration = "reobf")) { isTransitive = false }
     shade(project(":nms:v1_21_R7", configuration = "reobf")) { isTransitive = false }
     // shade(project(":nms:v26_R1")) { isTransitive = false }
     // shade(project(":nms:v26_R2")) { isTransitive = false }
