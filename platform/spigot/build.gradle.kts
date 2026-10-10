@@ -31,7 +31,7 @@ bukkitPluginYaml {
     version = project.version.toString()
     name = "PrimeModel"
     foliaSupported = true
-    apiVersion = "1.21.4"
+    apiVersion = "1.21.9"
     author = "RioxS"
     description = "Modern Bedrock model engine for Minecraft Java Edition"
     softDepend = listOf(
