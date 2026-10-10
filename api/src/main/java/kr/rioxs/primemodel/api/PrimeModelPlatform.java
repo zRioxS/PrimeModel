@@ -246,7 +246,7 @@ public interface PrimeModelPlatform extends ModelEventApplication {
      * @return the logger
      * @since 1.15.2
      */
-    @NotNull PrimeModelLogger logger();
+    @NotNull PrimeModel.Logger logger();
 
     /**
      * Returns the expression evaluator.
@@ -254,7 +254,7 @@ public interface PrimeModelPlatform extends ModelEventApplication {
      * @return the evaluator
      * @since 1.15.2
      */
-    @NotNull PrimeModelEvaluator evaluator();
+    @NotNull PrimeModel.Evaluator evaluator();
 
     /**
      * Returns the event bus.

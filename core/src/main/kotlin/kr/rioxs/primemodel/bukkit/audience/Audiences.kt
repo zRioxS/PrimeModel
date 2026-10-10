@@ -1,4 +1,5 @@
 package kr.rioxs.primemodel.bukkit.audience
+import kr.rioxs.primemodel.api.PrimeModel
 
 import kr.rioxs.primemodel.bukkit.util.audience
 import net.kyori.adventure.audience.Audience

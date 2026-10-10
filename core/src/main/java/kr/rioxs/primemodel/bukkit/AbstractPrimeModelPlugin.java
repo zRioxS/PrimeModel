@@ -2,7 +2,7 @@ package kr.rioxs.primemodel.bukkit;
 
 import kr.rioxs.primemodel.PrimeModelPlatformImpl;
 import kr.rioxs.primemodel.api.PrimeModel;
-import kr.rioxs.primemodel.api.PrimeModelLogger;
+import kr.rioxs.primemodel.api.PrimeModel;
 import kr.rioxs.primemodel.api.bukkit.PrimeModelBukkit;
 import kr.rioxs.primemodel.api.bukkit.platform.BukkitPlatform.BukkitAdapter;
 import net.kyori.adventure.text.Component;
@@ -23,7 +23,7 @@ public abstract class AbstractPrimeModelPlugin extends JavaPlugin implements Pri
     protected final AtomicBoolean onReload = new AtomicBoolean();
     protected final AtomicBoolean firstLoad = new AtomicBoolean();
     protected final BukkitAdapter adapter = new BukkitAdapter();
-    protected final PrimeModelLogger logger = new PrimeModelLogger() {
+    protected final PrimeModel.Logger logger = new PrimeModel.Logger() {
 
         private volatile ComponentLogger internalLogger;
 

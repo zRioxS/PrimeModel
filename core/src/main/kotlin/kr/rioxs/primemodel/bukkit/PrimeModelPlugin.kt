@@ -1,4 +1,5 @@
 package kr.rioxs.primemodel.bukkit
+import kr.rioxs.primemodel.api.PrimeModel
 
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
 
@@ -17,9 +18,9 @@ import kr.rioxs.primemodel.api.manager.Managers.ReloadInfo
 import kr.rioxs.primemodel.api.nms.NMS
 import kr.rioxs.primemodel.api.pack.PackZipper
 import kr.rioxs.primemodel.api.PrimeModelConfig
-import kr.rioxs.primemodel.api.PrimeModelEvaluator
+import kr.rioxs.primemodel.api.PrimeModel.Evaluator
 import kr.rioxs.primemodel.api.PrimeModelEventBus
-import kr.rioxs.primemodel.api.PrimeModelLogger
+import kr.rioxs.primemodel.api.PrimeModel.Logger
 import kr.rioxs.primemodel.api.PrimeModelPlatform.ReloadResult
 import kr.rioxs.primemodel.api.PrimeModelPlatform.ReloadResult.*
 import kr.rioxs.primemodel.api.nms.NMSVersion.MinecraftVersion
@@ -164,9 +165,9 @@ abstract class PrimeModelPlugin : AbstractPrimeModelPlugin() {
     }
 
     override fun dataFolder(): File = dataFolder
-    override fun logger(): PrimeModelLogger = logger
+    override fun logger(): PrimeModel.Logger = logger
     override fun scheduler(): BukkitModelScheduler = props.scheduler
-    override fun evaluator(): PrimeModelEvaluator = props.evaluator
+    override fun evaluator(): PrimeModel.Evaluator = props.evaluator
     override fun eventBus(): BukkitModelEventBus = props.eventbus
     override fun <T : Manager> manager(managerClass: Class<T>): T = managerClass.cast(props.managers[managerClass])
 

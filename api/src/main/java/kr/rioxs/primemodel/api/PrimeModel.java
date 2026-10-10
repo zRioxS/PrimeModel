@@ -15,6 +15,8 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
+import net.kyori.adventure.text.Component;
+import kr.rioxs.primemodel.api.util.Utils.Functions.Float2FloatFunction;
 
 /**
  * The main entry point for the PrimeModel API.
@@ -37,7 +39,7 @@ import java.util.*;
  *
  * @since 1.15.2
  */
-public final class PrimeModel {
+public class PrimeModel {
 
     /**
      * Private initializer to prevent instantiation.
@@ -268,5 +270,31 @@ public final class PrimeModel {
         Objects.requireNonNull(instance, "instance cannot be null.");
         if (PrimeModel.instance == instance) throw new RuntimeException("Duplicated instance.");
         PrimeModel.instance = instance;
+    }
+
+    public interface Evaluator {
+        /**
+         * Compiles a Molang expression string into a high-performance evaluation function.
+         *
+         * @param expression the Molang expression string to compile (e.g., {@code "query.anim_time * 20"})
+         * @return the compiled {@link Float2FloatFunction} that evaluates the expression at runtime
+         */
+        @NotNull Float2FloatFunction compile(@NotNull String expression);
+    }
+
+    public interface Logger {
+        /**
+         * Logs informational messages to the platform console or log file.
+         *
+         * @param message one or more Adventure {@link Component} messages to log
+         */
+        void info(@NotNull Component... message);
+
+        /**
+         * Logs warning messages to the platform console or log file.
+         *
+         * @param message one or more Adventure {@link Component} messages to log
+         */
+        void warn(@NotNull Component... message);
     }
 }

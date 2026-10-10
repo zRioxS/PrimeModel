@@ -1,4 +1,5 @@
 package kr.rioxs.primemodel
+import kr.rioxs.primemodel.api.PrimeModel
 import kr.rioxs.primemodel.api.manager.Managers.Manager
 
 import gg.moonflower.molangcompiler.api.MolangCompiler
@@ -12,13 +13,13 @@ import kr.rioxs.primemodel.api.event.EventInterfaces.CancellableEvent
 import kr.rioxs.primemodel.api.event.EventInterfaces.ModelEvent
 import kr.rioxs.primemodel.api.event.EventInterfaces.ModelEventApplication
 import kr.rioxs.primemodel.api.event.EventInterfaces.ModelEventListener
-import kr.rioxs.primemodel.api.PrimeModelEvaluator
+import kr.rioxs.primemodel.api.PrimeModel.Evaluator
 import kr.rioxs.primemodel.api.PrimeModelEventBus
 import kr.rioxs.primemodel.api.util.Utils.Functions.Float2FloatFunction
 import kr.rioxs.primemodel.api.util.Utils.Locks.DuplexLock
 import kr.rioxs.primemodel.util.handleFailure
 
-class PrimeModelEvaluatorImpl : PrimeModelEvaluator {
+class PrimeModelEvaluatorImpl : PrimeModel.Evaluator {
 
     private val molang = MolangCompiler.create(MolangCompiler.DEFAULT_FLAGS, javaClass.classLoader)
 

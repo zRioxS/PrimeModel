@@ -1,4 +1,5 @@
 package kr.rioxs.primemodel.bukkit.configuration
+import kr.rioxs.primemodel.api.PrimeModel
 
 import kr.rioxs.primemodel.bukkit.util.toYaml
 import kr.rioxs.primemodel.util.DATA_FOLDER

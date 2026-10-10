@@ -1,4 +1,5 @@
 package kr.rioxs.primemodel.bukkit.compatibility.nexo
+import kr.rioxs.primemodel.api.PrimeModel
 
 import kr.rioxs.primemodel.bukkit.compatibility.Compatibility
 

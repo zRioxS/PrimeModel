@@ -1,4 +1,5 @@
 package kr.rioxs.primemodel.bukkit.scheduler
+import kr.rioxs.primemodel.api.PrimeModel
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import java.util.concurrent.TimeUnit
