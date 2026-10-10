@@ -10,7 +10,7 @@ import kr.rioxs.primemodel.api.PrimeModelPlatform.ReloadResult.*
 import kr.rioxs.primemodel.api.animation.Animations.AnimationIterator
 import kr.rioxs.primemodel.api.animation.Animations.AnimationModifier
 import kr.rioxs.primemodel.api.tracker.TrackerUtils.EntityHideOption
-import kr.rioxs.primemodel.api.tracker.ModelScaler
+import kr.rioxs.primemodel.api.tracker.ModelTransform.ModelScaler
 import kr.rioxs.primemodel.api.tracker.Tracker
 import kr.rioxs.primemodel.api.tracker.TrackerUtils.TrackerModifier
 import kr.rioxs.primemodel.bukkit.audience.AudiencePlayer
