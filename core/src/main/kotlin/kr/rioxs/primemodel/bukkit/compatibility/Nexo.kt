@@ -1,7 +1,6 @@
-package kr.rioxs.primemodel.bukkit.compatibility.nexo
+package kr.rioxs.primemodel.bukkit.compatibility
 import kr.rioxs.primemodel.api.PrimeModel
 
-import kr.rioxs.primemodel.bukkit.compatibility.Compatibility
 
 import kr.rioxs.primemodel.bukkit.util.PLUGIN
 import kr.rioxs.primemodel.bukkit.util.registerListener
