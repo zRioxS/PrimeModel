@@ -736,7 +736,7 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
      * @return true if any nametags were created
      * @since 1.15.2
      */
-    public boolean createNametag(@NotNull BonePredicate predicate, @NotNull BiConsumer<RenderedBone, ModelNametag> consumer) {
+    public boolean createNametag(@NotNull BonePredicate predicate, @NotNull BiConsumer<RenderedBone, NMSTypes.ModelNametag> consumer) {
         return tryUpdate((b, p) -> b.createNametag(p, tag -> {
             consumer.accept(b, tag);
             perPlayerTick((tracker, player) -> {

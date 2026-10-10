@@ -72,7 +72,7 @@ public interface NMS {
      * @return the created nametag
      * @since 1.15.2
      */
-    @NotNull ModelNametag createNametag(@NotNull RenderedBone bone);
+    @NotNull NMSTypes.ModelNametag createNametag(@NotNull RenderedBone bone);
 
     /**
      * Creates a nametag for a rendered bone with configuration.
@@ -82,7 +82,7 @@ public interface NMS {
      * @return the created nametag
      * @since 1.15.2
      */
-    default @NotNull ModelNametag createNametag(@NotNull RenderedBone bone, @NotNull Consumer<ModelNametag> consumer) {
+    default @NotNull NMSTypes.ModelNametag createNametag(@NotNull RenderedBone bone, @NotNull Consumer<NMSTypes.ModelNametag> consumer) {
         var created = createNametag(bone);
         consumer.accept(created);
         return created;

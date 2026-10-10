@@ -5,7 +5,7 @@ import kr.rioxs.primemodel.api.bone.Bones.BonePosition
 import com.mojang.math.Transformation
 import kr.rioxs.primemodel.api.PrimeModel
 import kr.rioxs.primemodel.api.bone.RenderedBone
-import kr.rioxs.primemodel.api.nms.ModelNametag
+import kr.rioxs.primemodel.api.nms.NMSTypes
 import kr.rioxs.primemodel.api.nms.PacketBundler
 import kr.rioxs.primemodel.api.platform.PlatformLocation
 import kr.rioxs.primemodel.api.platform.PlatformPlayer
@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 internal class ModelNametagImpl(
     private val bone: RenderedBone
-) : ModelNametag {
+) : NMSTypes.ModelNametag {
     private companion object {
         private val emptyVector = Vector3f()
         private val emptyTransformation = Transformation(

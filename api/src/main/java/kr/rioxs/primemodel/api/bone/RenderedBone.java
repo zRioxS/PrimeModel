@@ -99,7 +99,7 @@ public final class RenderedBone implements BoneEventHandler {
     private HitBox hitBox;
     @Getter
     @Nullable
-    private ModelNametag nametag;
+    private NMSTypes.ModelNametag nametag;
 
     //Item
     @Getter
@@ -233,7 +233,7 @@ public final class RenderedBone implements BoneEventHandler {
      * @param consumer nametag consumer
      * @return success
      */
-    public boolean createNametag(@NotNull Predicate<RenderedBone> predicate, @NotNull Consumer<ModelNametag> consumer) {
+    public boolean createNametag(@NotNull Predicate<RenderedBone> predicate, @NotNull Consumer<NMSTypes.ModelNametag> consumer) {
         if (nametag == null && predicate.test(this)) {
             synchronized (this) {
                 if (nametag != null) return false;

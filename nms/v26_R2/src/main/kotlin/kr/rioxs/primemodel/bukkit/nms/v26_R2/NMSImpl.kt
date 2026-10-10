@@ -320,7 +320,7 @@ class NMSImpl : NMS {
         display.entityData.packDirty()
     }
 
-    override fun createNametag(bone: RenderedBone): ModelNametag = ModelNametagImpl(bone)
+    override fun createNametag(bone: RenderedBone): NMSTypes.ModelNametag = ModelNametagImpl(bone)
 
     override fun tint(itemStack: PlatformItemStack, rgb: Int): PlatformItemStack {
         return itemStack.unwarp().asVanilla().apply {
