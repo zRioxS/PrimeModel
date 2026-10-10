@@ -178,13 +178,13 @@ public sealed interface RenderSource<T extends Tracker> {
         @NotNull
         @Override
         default EntityTracker create(@NotNull RenderPipeline pipeline, @NotNull TrackerModifier modifier, @NotNull Consumer<EntityTracker> preUpdateConsumer) {
-            return EntityTrackerRegistry.getOrCreate(entity()).create(pipeline.name(), r -> new PlayerTracker(r, pipeline, modifier, preUpdateConsumer));
+            return EntityTrackerRegistry.getOrCreate(entity()).create(pipeline.name(), r -> new Tracker.PlayerTracker(r, pipeline, modifier, preUpdateConsumer));
         }
 
         @Override
         @NotNull
         default EntityTracker getOrCreate(@NotNull String name, @NotNull Function<Entity, RenderPipeline> function, @NotNull TrackerModifier modifier, @NotNull Consumer<EntityTracker> preUpdateConsumer) {
-            return EntityTrackerRegistry.getOrCreate(entity()).getOrCreate(name, r -> new PlayerTracker(r, function.apply(this), modifier, preUpdateConsumer));
+            return EntityTrackerRegistry.getOrCreate(entity()).getOrCreate(name, r -> new Tracker.PlayerTracker(r, function.apply(this), modifier, preUpdateConsumer));
         }
 
         @Override

@@ -53,6 +53,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.*;
 import java.util.stream.Stream;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonSerializer;
+import com.google.gson.annotations.SerializedName;
+import kr.rioxs.primemodel.api.tracker.TrackerUtils.EntityHideOption;
+import com.google.gson.JsonPrimitive;
 
 /**
  * Represents the core controller for a specific model instance.
@@ -1105,6 +1113,157 @@ public sealed abstract class Tracker implements AutoCloseable permits EntityTrac
          */
         public boolean shouldBeSave() {
             return save;
+        }
+    }
+
+
+    /**
+     * A specialized EntityTracker for tracking players.
+     * This tracker automatically configures the body rotator to player mode.
+     *
+     * @since 1.15.2
+     */
+    public static final class PlayerTracker extends EntityTracker {
+
+        @ApiStatus.Internal
+        public PlayerTracker(@NotNull EntityTrackerRegistry registry, @NotNull RenderPipeline pipeline, @NotNull TrackerModifier modifier, @NotNull Consumer<EntityTracker> preUpdateConsumer) {
+            super(registry, pipeline, modifier, preUpdateConsumer);
+            bodyRotator().setValue(setter -> setter.setPlayerMode(true));
+        }
+    }
+
+    public static record TrackerData(
+        @NotNull String id,
+        @Nullable ModelScaler scaler,
+        @Nullable ModelRotator rotator,
+        @NotNull TrackerModifier modifier,
+        @Nullable @SerializedName("body-rotator") EntityBodyRotator.RotatorData bodyRotator,
+        @Nullable @SerializedName("hide-option") EntityHideOption hideOption,
+        @Nullable @SerializedName("mark-for-spawn") Set<UUID> markForSpawn
+    ) {
+        /**
+         * The GSON parser for serializing and deserializing tracker data.
+         * @since 1.15.2
+         */
+        public static final Gson PARSER = new GsonBuilder()
+            .registerTypeAdapter(ModelScaler.class, (JsonDeserializer<ModelScaler>) (json, _, _) -> json.isJsonObject() ? ModelScaler.deserialize(json.getAsJsonObject()) : ModelScaler.defaultScaler())
+            .registerTypeAdapter(ModelScaler.class, (JsonSerializer<ModelScaler>) (src, _, _) -> src.serialize())
+            .registerTypeAdapter(ModelRotator.class, (JsonDeserializer<ModelRotator>) (json, _, _) -> json.isJsonObject() ? ModelRotator.deserialize(json.getAsJsonObject()) : ModelRotator.YAW)
+            .registerTypeAdapter(ModelRotator.class, (JsonSerializer<ModelRotator>) (src, _, _) -> src.serialize())
+            .registerTypeAdapter(EntityHideOption.class, (JsonDeserializer<EntityHideOption>) (json, _, _) -> json.isJsonArray() ? EntityHideOption.deserialize(json.getAsJsonArray()) : EntityHideOption.DEFAULT)
+            .registerTypeAdapter(EntityHideOption.class, (JsonSerializer<EntityHideOption>) (src, _, _) -> src.serialize())
+            .registerTypeAdapter(UUID.class, (JsonDeserializer<UUID>) (json, _, _) -> UUID.fromString(json.getAsString()))
+            .registerTypeAdapter(UUID.class, (JsonSerializer<UUID>) (src, _, _) -> new JsonPrimitive(src.toString()))
+            .create();
+    
+        /**
+         * Applies this data to an existing entity tracker.
+         *
+         * @param tracker the target tracker
+         * @since 1.15.2
+         */
+        public void applyAs(@NotNull EntityTracker tracker) {
+            tracker.markPlayerForSpawn(markForSpawn());
+            tracker.hideOption(hideOption());
+            tracker.scaler(scaler());
+            tracker.rotator(rotator());
+            tracker.bodyRotator().setValue(bodyRotator());
+        }
+    
+        /**
+         * Serializes this data to a JSON element.
+         *
+         * @return the JSON element
+         * @since 1.15.2
+         */
+        public @NotNull JsonElement serialize() {
+            return PARSER.toJsonTree(this);
+        }
+    
+        /**
+         * Deserializes tracker data from a JSON element.
+         *
+         * @param element the JSON element
+         * @return the tracker data
+         * @since 1.15.2
+         */
+        public static @NotNull TrackerData deserialize(@NotNull JsonElement element) {
+            return element.isJsonPrimitive() ? new TrackerData(
+                element.getAsString(),
+                ModelScaler.entity(),
+                null,
+                TrackerModifier.DEFAULT,
+                EntityBodyRotator.defaultData(),
+                null,
+                null
+            ) : PARSER.fromJson(element, TrackerData.class);
+        }
+    
+        /**
+         * Returns the model scaler, or a default entity scaler if not specified.
+         *
+         * @return the model scaler
+         * @since 1.15.2
+         */
+        @Override
+        public @NotNull ModelScaler scaler() {
+            return scaler != null ? scaler : ModelScaler.entity();
+        }
+    
+        /**
+         * Returns the model rotator, or a default YAW rotator if not specified.
+         *
+         * @return the model rotator
+         * @since 1.15.2
+         */
+        @Override
+        public @NotNull ModelRotator rotator() {
+            return rotator != null ? rotator : ModelRotator.YAW;
+        }
+    
+        /**
+         * Returns the entity hide option, or the default hide option if not specified.
+         *
+         * @return the entity hide option
+         * @since 1.15.2
+         */
+        @Override
+        public @NotNull EntityHideOption hideOption() {
+            return hideOption != null ? hideOption : EntityHideOption.DEFAULT;
+        }
+    
+        /**
+         * Returns the set of player UUIDs marked for spawning, or an empty set if not specified.
+         *
+         * @return the set of player UUIDs marked for spawning
+         * @since 1.15.2
+         */
+        @Override
+        public @NotNull Set<UUID> markForSpawn() {
+            return markForSpawn != null ? markForSpawn : Collections.emptySet();
+        }
+    
+        /**
+         * Returns the body rotation data, or default body rotation data if not specified.
+         *
+         * @return the body rotation data
+         * @since 1.15.2
+         */
+        @Override
+        public @NotNull EntityBodyRotator.RotatorData bodyRotator() {
+            return bodyRotator != null ? bodyRotator : EntityBodyRotator.defaultData();
+        }
+    
+        /**
+         * Serializes this TrackerData object to a JSON string.
+         *
+         * @return a JSON string representation of this object
+         * @since 1.15.2
+         */
+        @NotNull
+        @Override
+        public String toString() {
+            return serialize().toString();
         }
     }
 }

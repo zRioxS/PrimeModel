@@ -46,7 +46,7 @@ import java.util.function.Predicate;
  *
  * @since 1.15.2
  */
-public sealed class EntityTracker extends Tracker permits PlayerTracker {
+public sealed class EntityTracker extends Tracker permits Tracker.PlayerTracker {
 
     private static final BonePredicate CREATE_HITBOX_PREDICATE = BonePredicate.name("hitbox")
         .or(BonePredicate.tag(BoneTags.HITBOX))
@@ -328,13 +328,13 @@ public sealed class EntityTracker extends Tracker permits PlayerTracker {
     }
 
     /**
-     * Converts the current tracker state to a {@link TrackerData} object.
+     * Converts the current tracker state to a {@link Tracker.TrackerData} object.
      *
      * @return the tracker data
      * @since 1.15.2
      */
-    public @NotNull TrackerData asTrackerData() {
-        return new TrackerData(
+    public @NotNull Tracker.TrackerData asTrackerData() {
+        return new Tracker.TrackerData(
             name(),
             scaler,
             rotator,

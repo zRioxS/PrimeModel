@@ -377,7 +377,7 @@ public final class EntityTrackerRegistry {
      */
     public void reload() {
         closed.set(true);
-        var data = new ArrayList<TrackerData>(trackerMap.size());
+        var data = new ArrayList<Tracker.TrackerData>(trackerMap.size());
         for (EntityTracker value : trackers()) {
             value.close();
             if (value.canBeSaved()) data.add(value.asTrackerData());
@@ -419,7 +419,7 @@ public final class EntityTrackerRegistry {
      * @param stream the data stream
      * @since 1.15.2
      */
-    public void load(@NotNull Stream<TrackerData> stream) {
+    public void load(@NotNull Stream<Tracker.TrackerData> stream) {
         stream.forEach(parsed -> PrimeModel.model(parsed.id()).ifPresent(model -> model.create(entity, parsed.modifier(), parsed::applyAs)));
         save();
     }
@@ -432,7 +432,7 @@ public final class EntityTrackerRegistry {
     public void load() {
         load(deserialize(entity.modelData())
             .stream()
-            .map(TrackerData::deserialize));
+            .map(Tracker.TrackerData::deserialize));
     }
 
     /**
