@@ -17,7 +17,7 @@ import kr.rioxs.primemodel.api.event.EventInterfaces.ModelImportedEvent
 import kr.rioxs.primemodel.api.manager.Managers.ModelManager
 import kr.rioxs.primemodel.api.pack.Pack.PackBuilder
 import kr.rioxs.primemodel.api.pack.PackZipper
-import kr.rioxs.primemodel.api.platform.PlatformNamespace
+import kr.rioxs.primemodel.api.platform.PlatformRegionHolder
 import kr.rioxs.primemodel.util.*
 import net.kyori.adventure.text.format.NamedTextColor.*
 import java.io.File
@@ -232,7 +232,7 @@ object ModelManagerImpl : ModelManager, GlobalManager {
                 return RendererGroup(
                     scale(),
                     if (name.toItemMapper() !== Bones.BoneItemMapper.EMPTY) null else builder(this)?.let { itemNamespace ->
-                        CONFIG.item().get().itemModel(PlatformNamespace(CONFIG.namespace(), itemNamespace))
+                        CONFIG.item().get().itemModel(PlatformRegionHolder.Namespace(CONFIG.namespace(), itemNamespace))
                     },
                     this,
                     children.toBoneMap { it.parse() },

@@ -31,4 +31,14 @@ public interface PlatformRegionHolder {
      * @since 2.0.0
      */
     @Nullable ModelTask taskLater(long delay, @NotNull Runnable runnable);
+
+    /**
+     * Represents a namespaced key (e.g., "minecraft:apple").
+     *
+     * @param namespace the namespace (e.g., "minecraft")
+     * @param path the path (e.g., "apple")
+     * @since 2.0.0
+     */
+    public record Namespace(@NotNull String namespace, @NotNull String path) {
+    }
 }

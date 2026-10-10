@@ -6,7 +6,6 @@ import kr.rioxs.primemodel.api.platform.PlatformEntity;
 import kr.rioxs.primemodel.api.platform.PlatformItemStack;
 import kr.rioxs.primemodel.api.platform.PlatformLivingEntity;
 import kr.rioxs.primemodel.api.platform.PlatformLocation;
-import kr.rioxs.primemodel.api.platform.PlatformNamespace;
 import kr.rioxs.primemodel.api.platform.PlatformOfflinePlayer;
 import kr.rioxs.primemodel.api.platform.PlatformPlayer;
 import kr.rioxs.primemodel.api.platform.PlatformWorld;
@@ -26,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.UUID;
+import kr.rioxs.primemodel.api.platform.PlatformRegionHolder;
 
 /**
  * Merged Bukkit platform classes.
@@ -126,7 +126,7 @@ public final class BukkitPlatform {
         }
 
         @Override
-        public @NotNull PlatformItemStack itemModel(@Nullable PlatformNamespace namespace) {
+        public @NotNull PlatformItemStack itemModel(@Nullable PlatformRegionHolder.Namespace namespace) {
             var meta = source.getItemMeta();
             if (meta == null) return this;
             meta.setItemModel(namespace == null ? null : new NamespacedKey(namespace.namespace(), namespace.path()));

@@ -11,7 +11,6 @@ import kr.rioxs.primemodel.api.bukkit.PrimeModelBukkit
 import kr.rioxs.primemodel.api.bukkit.entity.BaseBukkitEntity
 import kr.rioxs.primemodel.api.data.blueprint.Blueprints.ModelBoundingBox
 import kr.rioxs.primemodel.api.entity.BaseEntity
-import kr.rioxs.primemodel.api.entity.BasePlayer
 import kr.rioxs.primemodel.api.mount.MountController
 import kr.rioxs.primemodel.api.nms.*
 import kr.rioxs.primemodel.api.nms.NMS.ModAnimationBundler
@@ -142,7 +141,7 @@ class NMSImpl : NMS {
             }
         }
 
-        override fun base(): BasePlayer = base
+        override fun base(): BaseEntity.Player = base
         override fun isModEnabled(): Boolean = (if (PrimeModelBukkit.IS_PAPER) player.channels() else player.listeningPluginChannels).contains(ModAnimationBundlerImpl.KEY)
 
         private val playerModel get() = connection.player.id.toRegistry()
@@ -355,7 +354,7 @@ class NMSImpl : NMS {
         return BaseEntityImpl(craft)
     }
 
-    override fun adapt(player: PlatformPlayer): BasePlayer {
+    override fun adapt(player: PlatformPlayer): BaseEntity.Player {
         val craft = player.unwarp() as CraftPlayer
         return BasePlayerImpl(
             craft,

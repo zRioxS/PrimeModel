@@ -38,7 +38,7 @@ public interface PlatformItemStack {
      * @return this item stack
      * @since 3.4.0
      */
-    @NotNull PlatformItemStack itemModel(@Nullable PlatformNamespace namespace);
+    @NotNull PlatformItemStack itemModel(@Nullable PlatformRegionHolder.Namespace namespace);
 
     /**
      * Creates a copy of this item stack.
