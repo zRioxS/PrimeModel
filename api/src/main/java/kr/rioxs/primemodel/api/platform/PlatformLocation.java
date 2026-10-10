@@ -22,7 +22,7 @@ public interface PlatformLocation extends PlatformRegionHolder {
      * @return the world
      * @since 2.0.0
      */
-    PlatformWorld world();
+    PlatformLocation.World world();
 
     /**
      * Returns the X coordinate.
@@ -98,5 +98,17 @@ public interface PlatformLocation extends PlatformRegionHolder {
         var y = y() - other.y();
         var z = z() - other.z();
         return fma(x, x, fma(y, y, z * z));
+    }
+
+    /**
+     * Represents a world in the underlying platform (Bukkit, Fabric, etc.).
+     * <p>
+     * This interface serves as an abstraction layer for world-related operations,
+     * allowing the core engine to interact with worlds without direct dependencies on platform-specific APIs.
+     * </p>
+     *
+     * @since 2.0.0
+     */
+    public interface World {
     }
 }

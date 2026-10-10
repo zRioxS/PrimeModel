@@ -31,5 +31,5 @@ internal fun PlatformLivingEntity.unwarp(): LivingEntity = (this as BukkitLiving
 internal fun PlatformOfflinePlayer.unwarp(): OfflinePlayer = (this as BukkitOfflinePlayer).source
 internal fun PlatformPlayer.unwarp(): Player = (this as BukkitPlayer).source
 internal fun PlatformLocation.unwarp(): Location = (this as BukkitLocation).source
-internal fun PlatformWorld.unwarp(): World = (this as BukkitWorld).source
+internal fun PlatformLocation.World.unwarp(): World = (this as BukkitWorld).source
 internal fun PlatformItemStack.unwarp(): ItemStack = (this as BukkitItemStack).source

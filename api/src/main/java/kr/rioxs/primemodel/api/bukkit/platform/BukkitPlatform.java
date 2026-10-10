@@ -8,7 +8,6 @@ import kr.rioxs.primemodel.api.platform.PlatformLivingEntity;
 import kr.rioxs.primemodel.api.platform.PlatformLocation;
 import kr.rioxs.primemodel.api.platform.PlatformOfflinePlayer;
 import kr.rioxs.primemodel.api.platform.PlatformPlayer;
-import kr.rioxs.primemodel.api.platform.PlatformWorld;
 import kr.rioxs.primemodel.api.scheduler.Schedulers.ModelTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -143,7 +142,7 @@ public final class BukkitPlatform {
     public record BukkitLocation(@NotNull Location source) implements PlatformLocation {
 
         @Override
-        public @NotNull PlatformWorld world() {
+        public @NotNull PlatformLocation.World world() {
             return BukkitAdapter.adapt(source.getWorld());
         }
 
@@ -190,7 +189,7 @@ public final class BukkitPlatform {
         }
     }
 
-    public record BukkitWorld(@NotNull World source) implements PlatformWorld {
+    public record BukkitWorld(@NotNull World source) implements PlatformLocation.World {
     }
 
     public static final class BukkitAdapter implements PlatformAdapter {
@@ -219,7 +218,7 @@ public final class BukkitPlatform {
             return new BukkitLocation(location);
         }
 
-        public static @NotNull PlatformWorld adapt(@NotNull World world) {
+        public static @NotNull PlatformLocation.World adapt(@NotNull World world) {
             return new BukkitWorld(world);
         }
 

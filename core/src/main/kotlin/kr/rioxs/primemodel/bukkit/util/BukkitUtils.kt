@@ -49,7 +49,7 @@ fun PlatformLivingEntity.unwarp(): LivingEntity = (this as BukkitLivingEntity).s
 fun PlatformOfflinePlayer.unwarp(): OfflinePlayer = (this as BukkitOfflinePlayer).source
 fun PlatformPlayer.unwarp(): Player = (this as BukkitPlayer).source
 fun PlatformLocation.unwarp(): Location = (this as BukkitLocation).source
-fun PlatformWorld.unwarp(): World = (this as BukkitWorld).source
+fun PlatformLocation.World.unwarp(): World = (this as BukkitWorld).source
 fun PlatformItemStack.unwarp(): ItemStack = (this as BukkitItemStack).source
 
 val PLUGIN get() = PLATFORM as PrimeModelPlugin
