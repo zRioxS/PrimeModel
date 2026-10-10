@@ -1,11 +1,11 @@
-package kr.rioxs.primemodel.bukkit.compatibility.citizens.command
+package kr.rioxs.primemodel.bukkit.compatibility
 
+import kr.rioxs.primemodel.api.PrimeModel
 import kr.rioxs.primemodel.api.animation.Animations.AnimationIterator
 import kr.rioxs.primemodel.api.animation.Animations.AnimationModifier
-import kr.rioxs.primemodel.api.PrimeModel
+import kr.rioxs.primemodel.api.data.renderer.ModelRenderer
 import kr.rioxs.primemodel.api.tracker.TrackerUtils.TrackerModifier
 import kr.rioxs.primemodel.api.util.Utils.Functions.FloatSupplier
-import kr.rioxs.primemodel.bukkit.compatibility.citizens.trait.ModelTrait
 import kr.rioxs.primemodel.bukkit.util.wrap
 import net.citizensnpcs.api.CitizensAPI
 import net.citizensnpcs.api.command.Arg
@@ -14,10 +14,36 @@ import net.citizensnpcs.api.command.Command
 import net.citizensnpcs.api.command.CommandContext
 import net.citizensnpcs.api.command.CommandMessages
 import net.citizensnpcs.api.npc.NPC
+import net.citizensnpcs.api.trait.Trait
+import net.citizensnpcs.api.trait.TraitInfo
+import net.citizensnpcs.api.trait.TraitName
+import net.citizensnpcs.api.util.DataKey
 import net.citizensnpcs.api.util.Messaging
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+
+// ============================================
+// Citizens Compatibility
+// ============================================
+
+
+class CitizensCompatibility : Compatibility {
+    override fun start() {
+        CitizensAPI.getTraitFactory()
+            .registerTrait(TraitInfo.create(ModelTrait::class.java))
+        CitizensAPI.getCommandManager().run {
+            register(ModelCommand::class.java)
+            register(AnimateCommand::class.java)
+            register(LimbCommand::class.java)
+        }
+    }
+}
+
+
+// ============================================
+// Citizens Commands
+// ============================================
 
 class AnimateCommand {
     @Command(
@@ -149,5 +175,60 @@ class ModelCommand {
 
     private class TabComplete : CompletionsProvider {
         override fun getCompletions(p0: CommandContext?, p1: CommandSender?, p2: NPC?): Collection<String> = PrimeModel.modelKeys()
+    }
+}
+
+// ============================================
+// Citizens Model Trait
+// ============================================
+
+@TraitName("model")
+class ModelTrait : Trait("model") {
+    private var _renderer: ModelRenderer? = null
+    var renderer
+        get() = _renderer
+        set(value) {
+            npc?.entity?.let {
+                value?.create(it.wrap()) ?: PrimeModel.registryOrNull(it.uniqueId)?.close()
+            }
+            _renderer = value
+        }
+
+    override fun load(key: DataKey) {
+        key.getString("")?.let {
+            PrimeModel.modelOrNull(it)?.let { model ->
+                renderer = model
+            }
+        }
+    }
+
+    override fun save(key: DataKey) {
+        npc?.entity?.uniqueId?.let { uuid ->
+            key.setString("", PrimeModel.registryOrNull(uuid)?.first()?.name())
+        }
+    }
+
+    override fun onSpawn() {
+        npc?.entity?.let {
+            if (PrimeModel.registryOrNull(it.uniqueId) == null) {
+                renderer?.create(it.wrap())
+            }
+        }
+    }
+
+    override fun onCopy() {
+        onSpawn()
+    }
+
+    override fun onDespawn() {
+        npc?.entity?.uniqueId?.let {
+            PrimeModel.registryOrNull(it)?.close()
+        }
+    }
+
+    override fun onRemove() {
+        npc?.entity?.uniqueId?.let {
+            PrimeModel.registryOrNull(it)?.close()
+        }
     }
 }
