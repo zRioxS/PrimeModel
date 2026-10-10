@@ -25,7 +25,6 @@ import kr.rioxs.primemodel.api.PrimeModelConfig
 import kr.rioxs.primemodel.api.PrimeModelPlatform.ReloadResult
 import kr.rioxs.primemodel.api.util.Utils.EntityUtil
 import kr.rioxs.primemodel.api.nms.NMSVersion.MinecraftVersion.*
-import kr.rioxs.primemodel.bukkit.configuration.PluginConfiguration
 import kr.rioxs.primemodel.bukkit.manager.CompatibilityManager
 import kr.rioxs.primemodel.bukkit.manager.EntityManager
 import kr.rioxs.primemodel.bukkit.manager.PlayerManagerImpl
@@ -42,6 +41,10 @@ import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.inventory.ItemStack
 import org.bukkit.Material
 import org.semver4j.Semver
+import kr.rioxs.primemodel.bukkit.util.toYaml
+import kr.rioxs.primemodel.util.DATA_FOLDER
+import kr.rioxs.primemodel.util.PLATFORM
+import org.bukkit.configuration.file.YamlConfiguration
 
 internal class PrimeModelProperties(
     private val plugin: AbstractPrimeModelPlugin
@@ -175,4 +178,36 @@ class PrimeModelConfigImpl(yaml: ConfigurationSection) : PrimeModelConfig {
     override fun playerHideDelay(): Long = playerHideDelay
     override fun packetBundlingSize(): Int = packetBundlingSize
     override fun enableStrictLoading(): Boolean = enableStrictLoading
+}
+
+
+// ============================================
+// Plugin Configuration (from PluginConfiguration.kt)
+// ============================================
+
+enum class PluginConfiguration(
+    private val dir: String
+) {
+    CONFIG("config.yml"),
+    ;
+
+    fun create(): YamlConfiguration {
+        val file = File(DATA_FOLDER, dir)
+        val exists = file.exists()
+        if (!exists) PLATFORM.saveResource(dir)
+        val yaml = file.toYaml()
+        val newYaml = PLATFORM.getResource(dir).ifNull { "Resource '$dir' not found." }.use {
+            it.toYaml()
+        }
+        yaml.getKeys(true).forEach {
+            if (!newYaml.contains(it)) yaml.set(it, null)
+        }
+        newYaml.getKeys(true).forEach {
+            if (!yaml.contains(it)) yaml.set(it, newYaml.get(it))
+            yaml.setComments(it ,newYaml.getComments(it))
+        }
+        return yaml.apply {
+            save(file)
+        }
+    }
 }

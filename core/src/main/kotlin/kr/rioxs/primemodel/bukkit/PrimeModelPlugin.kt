@@ -25,7 +25,6 @@ import kr.rioxs.primemodel.api.PrimeModelPlatform.ReloadResult
 import kr.rioxs.primemodel.api.PrimeModelPlatform.ReloadResult.*
 import kr.rioxs.primemodel.api.nms.NMSVersion.MinecraftVersion
 import kr.rioxs.primemodel.bukkit.command.startBukkitCommand
-import kr.rioxs.primemodel.bukkit.configuration.PluginConfiguration
 import kr.rioxs.primemodel.bukkit.util.ADVENTURE_PLATFORM
 import kr.rioxs.primemodel.bukkit.util.audience
 import kr.rioxs.primemodel.bukkit.util.PLUGIN
