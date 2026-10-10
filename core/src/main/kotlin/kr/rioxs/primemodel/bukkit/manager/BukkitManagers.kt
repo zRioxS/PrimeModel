@@ -19,7 +19,7 @@ import kr.rioxs.primemodel.api.PrimeModel
 import kr.rioxs.primemodel.api.tracker.EntityTracker
 import kr.rioxs.primemodel.api.tracker.EntityTrackerRegistry
 import kr.rioxs.primemodel.api.tracker.Tracker
-import kr.rioxs.primemodel.api.tracker.TrackerAnimations
+import kr.rioxs.primemodel.api.tracker.Tracker.TrackerAnimations
 import kr.rioxs.primemodel.bukkit.compatibility.citizens.CitizensCompatibility
 import kr.rioxs.primemodel.bukkit.compatibility.nexo.NexoCompatibility
 import kr.rioxs.primemodel.bukkit.compatibility.skinsrestorer.SkinsRestorerCompatibility
