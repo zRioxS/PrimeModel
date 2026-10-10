@@ -9,8 +9,8 @@ import kr.rioxs.primemodel.api.config.Configs.DebugConfig
 import kr.rioxs.primemodel.api.config.Configs.IndicatorConfig
 import kr.rioxs.primemodel.api.config.Configs.ModuleConfig
 import kr.rioxs.primemodel.api.config.Configs.PackConfig
-import kr.rioxs.primemodel.api.event.RecordEvents.PluginEndReloadEvent
-import kr.rioxs.primemodel.api.event.RecordEvents.PluginStartReloadEvent
+import kr.rioxs.primemodel.api.event.EventInterfaces.PluginEndReloadEvent
+import kr.rioxs.primemodel.api.event.EventInterfaces.PluginStartReloadEvent
 import kr.rioxs.primemodel.api.manager.Managers.ModelManager
 import kr.rioxs.primemodel.api.manager.Managers.PlayerManager
 import kr.rioxs.primemodel.api.manager.Managers.ProfileManager

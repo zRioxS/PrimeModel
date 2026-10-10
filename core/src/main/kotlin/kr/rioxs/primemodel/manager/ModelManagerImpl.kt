@@ -11,8 +11,8 @@ import kr.rioxs.primemodel.api.data.blueprint.Blueprints.BlueprintJson
 import kr.rioxs.primemodel.api.data.blueprint.Blueprints.ModelBlueprint
 import kr.rioxs.primemodel.api.data.renderer.ModelRenderer
 import kr.rioxs.primemodel.api.data.renderer.RendererGroup
-import kr.rioxs.primemodel.api.event.RecordEvents.ModelAssetsEvent
-import kr.rioxs.primemodel.api.event.RecordEvents.ModelImportedEvent
+import kr.rioxs.primemodel.api.event.EventInterfaces.ModelAssetsEvent
+import kr.rioxs.primemodel.api.event.EventInterfaces.ModelImportedEvent
 import kr.rioxs.primemodel.api.manager.Managers.ModelManager
 import kr.rioxs.primemodel.api.pack.Pack.PackBuilder
 import kr.rioxs.primemodel.api.pack.PackZipper

@@ -8,8 +8,8 @@ import kr.rioxs.primemodel.library.armormodel.ArmorResource
 import kr.rioxs.primemodel.library.dynamicuv.*
 import kr.rioxs.primemodel.api.armor.PlayerArmor.ArmorItem
 import kr.rioxs.primemodel.api.armor.PlayerArmor
-import kr.rioxs.primemodel.api.event.ClassEvents.CreatePlayerSkinEvent
-import kr.rioxs.primemodel.api.event.ClassEvents.RemovePlayerSkinEvent
+import kr.rioxs.primemodel.api.event.EventInterfaces.CreatePlayerSkinEvent
+import kr.rioxs.primemodel.api.event.EventInterfaces.RemovePlayerSkinEvent
 import kr.rioxs.primemodel.api.manager.Managers.SkinManager
 import kr.rioxs.primemodel.api.pack.PackObfuscator
 import kr.rioxs.primemodel.api.pack.PackZipper

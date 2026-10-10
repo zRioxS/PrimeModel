@@ -1,7 +1,7 @@
 package kr.rioxs.primemodel.manager
 import kr.rioxs.primemodel.api.manager.Managers.Manager
 
-import kr.rioxs.primemodel.api.event.RecordEvents.AnimationSignalEvent
+import kr.rioxs.primemodel.api.event.EventInterfaces.AnimationSignalEvent
 import kr.rioxs.primemodel.api.manager.Managers.ScriptManager
 import kr.rioxs.primemodel.api.pack.PackZipper
 import kr.rioxs.primemodel.api.script.Scripts.AnimationScript

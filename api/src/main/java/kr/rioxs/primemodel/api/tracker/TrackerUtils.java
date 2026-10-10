@@ -3,7 +3,7 @@ package kr.rioxs.primemodel.api.tracker;
 import com.google.gson.JsonArray;
 import kr.rioxs.primemodel.api.animation.Animations.AnimationModifier;
 import kr.rioxs.primemodel.api.data.renderer.RenderPipeline;
-import kr.rioxs.primemodel.api.event.RecordEvents.CreateDummyTrackerEvent;
+import kr.rioxs.primemodel.api.event.EventInterfaces.CreateDummyTrackerEvent;
 import kr.rioxs.primemodel.api.nms.PlayerChannelHandler;
 import kr.rioxs.primemodel.api.platform.PlatformLocation;
 import kr.rioxs.primemodel.api.platform.PlatformPlayer;
